@@ -94,7 +94,7 @@ WindowComponent::WindowComponent ()
     lblte21->setColour (TextEditor::textColourId, Colours::black);
     lblte21->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (lblTE2Short = new Label (L"te2 short label",
+    addAndMakeVisible (lblTE2Short = new LayoutLabel (L"te2 short label",
                                                 L"short label"));
     lblTE2Short->setFont (Font (15.0000f, Font::plain));
     lblTE2Short->setJustificationType (Justification::centredLeft);
@@ -128,7 +128,7 @@ WindowComponent::WindowComponent ()
     lblTE1Long->setColour (TextEditor::textColourId, Colours::black);
     lblTE1Long->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (lblTE2Long = new Label (L"te2 long label",
+    addAndMakeVisible (lblTE2Long = new LayoutLabel (L"te2 long label",
                                                L"This is a one line label that is really long and can contain a lot of text."));
     lblTE2Long->setFont (Font (15.0000f, Font::plain));
     lblTE2Long->setJustificationType (Justification::centredLeft);
@@ -154,7 +154,7 @@ WindowComponent::WindowComponent ()
     lblTE1Multi->setColour (TextEditor::textColourId, Colours::black);
     lblTE1Multi->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (lblTE2Multi = new Label (L"te2 multi",
+    addAndMakeVisible (lblTE2Multi = new LayoutLabel (L"te2 multi",
                                                 L"Multi Line Text"));
     lblTE2Multi->setFont (Font (15.0000f, Font::plain));
     lblTE2Multi->setJustificationType (Justification::centredLeft);
@@ -336,7 +336,7 @@ void WindowComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void WindowComponent::readXML(String xmlFile, Label* labelOne, Label* labelTwo)
+void WindowComponent::readXML(String xmlFile, Label* labelOne, LayoutLabel* labelTwo)
 {
     String xmlPath = File::getSpecialLocation(File::userHomeDirectory).getFullPathName();
     xmlPath += "/Projects/JuceText/SampleText/";

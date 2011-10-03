@@ -46,7 +46,7 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void readXML(String xmlFile, Label* labelOne, Label* labelTwo);
+    void readXML(String xmlFile, Label* labelOne, LayoutLabel* labelTwo);
     //[/UserMethods]
 
     void paint (Graphics& g);
@@ -72,14 +72,14 @@ private:
     Label* lblte11;
     Label* lblTE1Short;
     Label* lblte21;
-    Label* lblTE2Short;
+    LayoutLabel* lblTE2Short;
     Label* lblte12;
     Label* lblte22;
     Label* lblTE1Long;
-    Label* lblTE2Long;
+    LayoutLabel* lblTE2Long;
     Label* lblte13;
     Label* lblTE1Multi;
-    Label* lblTE2Multi;
+    LayoutLabel* lblTE2Multi;
     Label* lblte23;
     TextButton* tbSix;
     TextButton* tbSeven;

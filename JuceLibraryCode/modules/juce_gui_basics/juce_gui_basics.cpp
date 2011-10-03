@@ -202,6 +202,7 @@
 #include "widgets/juce_ComboBox.cpp"
 #include "widgets/juce_ImageComponent.cpp"
 #include "widgets/juce_Label.cpp"
+#include "widgets/juce_LayoutLabel.cpp"
 #include "widgets/juce_ListBox.cpp"
 #include "widgets/juce_ProgressBar.cpp"
 #include "widgets/juce_Slider.cpp"

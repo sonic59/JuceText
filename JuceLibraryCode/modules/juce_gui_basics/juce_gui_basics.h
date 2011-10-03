@@ -345,6 +345,9 @@ BEGIN_JUCE_NAMESPACE
 #ifndef __JUCE_LABEL_JUCEHEADER__
  #include "widgets/juce_Label.h"
 #endif
+#ifndef __JUCE_LAYOUTLABEL_JUCEHEADER__
+#include "widgets/juce_LayoutLabel.h"
+#endif
 #ifndef __JUCE_LISTBOX_JUCEHEADER__
  #include "widgets/juce_ListBox.h"
 #endif

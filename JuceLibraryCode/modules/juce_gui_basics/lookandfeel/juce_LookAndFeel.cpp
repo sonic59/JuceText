@@ -1358,6 +1358,35 @@ void LookAndFeel::drawLabel (Graphics& g, Label& label)
     }
 }
 
+void LookAndFeel::drawLayoutLabel (Graphics& g, LayoutLabel& layoutLabel)
+{
+    g.fillAll (layoutLabel.findColour (LayoutLabel::backgroundColourId));
+
+    if (! layoutLabel.isBeingEdited())
+    {
+        const float alpha = layoutLabel.isEnabled() ? 1.0f : 0.5f;
+
+        g.setColour (layoutLabel.findColour (LayoutLabel::textColourId).withMultipliedAlpha (alpha));
+        g.setFont (layoutLabel.getFont());
+        g.drawFittedText (layoutLabel.getText(),
+                          layoutLabel.getHorizontalBorderSize(),
+                          layoutLabel.getVerticalBorderSize(),
+                          layoutLabel.getWidth() - 2 * layoutLabel.getHorizontalBorderSize(),
+                          layoutLabel.getHeight() - 2 * layoutLabel.getVerticalBorderSize(),
+                          layoutLabel.getJustificationType(),
+                          jmax (1, (int) (layoutLabel.getHeight() / layoutLabel.getFont().getHeight())),
+                          layoutLabel.getMinimumHorizontalScale());
+
+        g.setColour (layoutLabel.findColour (LayoutLabel::outlineColourId).withMultipliedAlpha (alpha));
+        g.drawRect (0, 0, layoutLabel.getWidth(), layoutLabel.getHeight());
+    }
+    else if (layoutLabel.isEnabled())
+    {
+        g.setColour (layoutLabel.findColour (LayoutLabel::outlineColourId));
+        g.drawRect (0, 0, layoutLabel.getWidth(), layoutLabel.getHeight());
+    }
+}
+
 //==============================================================================
 void LookAndFeel::drawLinearSliderBackground (Graphics& g,
                                               int x, int y,
