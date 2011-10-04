@@ -620,6 +620,46 @@ void CoreGraphicsContext::drawGlyph (int glyphNumber, const AffineTransform& tra
 
 int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const int y, const int width, const int height)
 {
+    CTFontRef ctFontRef;
+
+    CFStringRef cfName = state->font.getTypefaceName().toCFString();
+    OSXTypeface* osxTypeface = dynamic_cast <OSXTypeface*> (state->font.getTypeface());
+    ctFontRef = CTFontCreateWithName (cfName, ((CGFloat)state->font.getHeight() * osxTypeface->fontHeightToCGSizeFactor), nullptr);
+    CFRelease (cfName);
+
+    const short zero = 1;
+    CFNumberRef numberRef = CFNumberCreate (0, kCFNumberShortType, &zero);
+
+    CFStringRef keys[] = { kCTFontAttributeName, kCTLigatureAttributeName };
+    CFTypeRef values[] = { ctFontRef, numberRef };
+    CFDictionaryRef attributedStringAtts;
+    attributedStringAtts = CFDictionaryCreate (nullptr, (const void**) &keys, (const void**) &values, numElementsInArray (keys),
+                                               &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFRelease (numberRef);
+
+    CFStringRef cfText = text.toCFString();
+    CFAttributedStringRef attribString = CFAttributedStringCreate (kCFAllocatorDefault, cfText, attributedStringAtts);
+    CFRelease (cfText);
+
+    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
+
+    CFRelease(attribString);
+
+    CGContextSetTextMatrix (context, state->fontTransform);
+
+    // Initialize a rectangular path.
+
+    CGMutablePathRef path = CGPathCreateMutable();
+    CGRect bounds = CGRectMake((CGFloat)x, flipHeight - ((CGFloat)y + (CGFloat)height), (CGFloat)width, (CGFloat)height);
+    CGPathAddRect(path, NULL, bounds);
+
+    // Create the frame and draw it into the graphics context
+
+    CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
+    CFRelease(framesetter);
+    CGPathRelease(path);
+    CTFrameDraw(frame, context);
+    CFRelease(frame);
     return 1;
 }
 
