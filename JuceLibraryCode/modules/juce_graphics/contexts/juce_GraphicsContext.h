@@ -208,6 +208,10 @@ public:
                          int maximumNumberOfLines,
                          float minimumHorizontalScale = 0.7f) const;
 
+    // Draw text string inside a rectangle using Text Layout API
+    void drawTextLayout (const String& text,
+                         int x, int y, int width, int height) const;
+
     //==============================================================================
     /** Fills the context's entire clip region with the current colour or brush.
 

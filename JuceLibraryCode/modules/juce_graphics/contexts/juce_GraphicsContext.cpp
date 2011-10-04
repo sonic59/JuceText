@@ -307,6 +307,24 @@ void Graphics::drawFittedText (const String& text,
     }
 }
 
+void Graphics::drawTextLayout (const String& text,
+                               const int x, const int y, const int width, const int height) const
+{
+    if (text.isNotEmpty()
+        && width > 0 && height > 0
+        && context->clipRegionIntersects (Rectangle<int> (x, y, width, height)))
+    {
+        // First try to draw using low level renderer
+        int actualHeight = context->drawTextLayout (text, x, y, width, height);
+        if (actualHeight > 0)
+        {
+            // Draw was successful so we can stop now
+            return;
+        }
+        // Draw was not successful, we need to draw the layout glyph by glyph
+    }
+}
+
 //==============================================================================
 void Graphics::fillRect (int x, int y, int width, int height) const
 {

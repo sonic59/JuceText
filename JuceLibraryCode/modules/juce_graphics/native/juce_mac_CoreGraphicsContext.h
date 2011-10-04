@@ -72,6 +72,7 @@ public:
     void setFont (const Font& newFont);
     Font getFont();
     void drawGlyph (int glyphNumber, const AffineTransform& transform);
+    int drawTextLayout (const String& text, const int x, const int y, const int width, const int height);
 
 private:
     CGContextRef context;

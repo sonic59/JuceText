@@ -618,6 +618,11 @@ void CoreGraphicsContext::drawGlyph (int glyphNumber, const AffineTransform& tra
     }
 }
 
+int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const int y, const int width, const int height)
+{
+    return 1;
+}
+
 CoreGraphicsContext::SavedState::SavedState()
     : font (1.0f), fontRef (0), fontTransform (CGAffineTransformIdentity),
       shading (0), numGradientLookupEntries (0)
