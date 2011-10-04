@@ -659,8 +659,22 @@ int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const 
     CFRelease(framesetter);
     CGPathRelease(path);
     CTFrameDraw(frame, context);
+
+    // Determine Text Height
+
+    CFArrayRef lines = CTFrameGetLines(frame);
+    CFIndex numLines = CFArrayGetCount(lines);
+    CGFloat textHeight = 0;
+    CFIndex lastLineIndex = numLines - 1;
+    CGFloat descent;
+    CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, lastLineIndex);
+    CTLineGetTypographicBounds(line, NULL,  &descent, NULL);
+    CGPoint lastLineOrigin;
+    CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
+    textHeight =  (CGFloat)height - lastLineOrigin.y + descent;
+
     CFRelease(frame);
-    return 1;
+    return (int)textHeight;
 }
 
 CoreGraphicsContext::SavedState::SavedState()
