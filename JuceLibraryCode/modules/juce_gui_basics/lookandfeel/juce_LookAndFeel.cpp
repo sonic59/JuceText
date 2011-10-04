@@ -1394,14 +1394,11 @@ void LookAndFeel::drawFrameLabel (Graphics& g, FrameLabel& frameLabel)
 
         g.setColour (frameLabel.findColour (FrameLabel::textColourId).withMultipliedAlpha (alpha));
         g.setFont (frameLabel.getFont());
-        g.drawFittedText (frameLabel.getText(),
+        g.drawTextFrame (frameLabel.getParagraphs(),
                           frameLabel.getHorizontalBorderSize(),
                           frameLabel.getVerticalBorderSize(),
                           frameLabel.getWidth() - 2 * frameLabel.getHorizontalBorderSize(),
-                          frameLabel.getHeight() - 2 * frameLabel.getVerticalBorderSize(),
-                          frameLabel.getJustificationType(),
-                          jmax (1, (int) (frameLabel.getHeight() / frameLabel.getFont().getHeight())),
-                          frameLabel.getMinimumHorizontalScale());
+                          frameLabel.getHeight() - 2 * frameLabel.getVerticalBorderSize());
 
         g.setColour (frameLabel.findColour (FrameLabel::outlineColourId).withMultipliedAlpha (alpha));
         g.drawRect (0, 0, frameLabel.getWidth(), frameLabel.getHeight());

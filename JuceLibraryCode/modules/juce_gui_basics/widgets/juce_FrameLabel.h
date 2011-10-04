@@ -65,6 +65,8 @@ public:
     */
     void setText (const String& newText, bool broadcastChangeMessage);
 
+    void setParagraphs (const StringArray& newText, bool broadcastChangeMessage);
+
     /** Returns the label's current text.
 
         @param returnActiveEditorContents   if this is true and the label is currently
@@ -75,6 +77,8 @@ public:
                                             key.
     */
     String getText (bool returnActiveEditorContents = false) const;
+
+    StringArray getParagraphs (bool returnActiveEditorContents = false) const;
 
     /** Returns the text content as a Value object.
         You can call Value::referTo() on this object to make the label read and control
@@ -315,6 +319,7 @@ private:
     //==============================================================================
     Value textValue;
     String lastTextValue;
+    StringArray textValues;
     Font font;
     Justification justification;
     ScopedPointer<TextEditor> editor;

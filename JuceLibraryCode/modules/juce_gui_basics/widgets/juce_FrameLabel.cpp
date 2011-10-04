@@ -79,11 +79,33 @@ void FrameLabel::setText (const String& newText,
     }
 }
 
+void FrameLabel::setParagraphs (const StringArray& newText,
+                          const bool broadcastChangeMessage)
+{
+    hideEditor (true);
+
+    textValues = newText;
+    repaint();
+
+    textWasChanged();
+
+    if (ownerComponent != nullptr)
+        componentMovedOrResized (*ownerComponent, true, true);
+
+    if (broadcastChangeMessage)
+        callChangeListeners();
+}
+
 String FrameLabel::getText (const bool returnActiveEditorContents) const
 {
     return (returnActiveEditorContents && isBeingEdited())
                 ? editor->getText()
                 : textValue.toString();
+}
+
+StringArray FrameLabel::getParagraphs (const bool returnActiveEditorContents) const
+{
+    return textValues;
 }
 
 void FrameLabel::valueChanged (Value&)

@@ -212,6 +212,10 @@ public:
     void drawTextLayout (const String& text,
                          int x, int y, int width, int height) const;
 
+    // Draw text strings inside a rectangle using Text Layout API
+    void drawTextFrame (const StringArray& text,
+                         int x, int y, int width, int height) const;
+
     //==============================================================================
     /** Fills the context's entire clip region with the current colour or brush.
 

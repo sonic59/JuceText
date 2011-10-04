@@ -325,6 +325,36 @@ void Graphics::drawTextLayout (const String& text,
     }
 }
 
+void Graphics::drawTextFrame (const StringArray& text,
+                               const int x, const int y, const int width, const int height) const
+{
+    if (text.size() > 0
+        && width > 0 && height > 0
+        && context->clipRegionIntersects (Rectangle<int> (x, y, width, height)))
+    {
+        // First try to draw using low level renderer
+        int actualHeight = context->drawTextLayout (text[0], x, y, width, height);
+        if (actualHeight > 0)
+        {
+            // Draw was successful, keep using low level renderer for each paragraph
+            int availableHeight = height;
+            for (int i = 1; i < text.size(); ++i)
+            {
+                if (text[i] == "")
+                {
+                    availableHeight -= 10;
+                    continue;
+                }
+                availableHeight -= actualHeight;
+                if (availableHeight <= 0) break;
+                actualHeight = context->drawTextLayout (text[i], x, y + height - availableHeight, width, availableHeight);
+            }
+            return;
+        }
+        // Draw was not successful, we need to draw the layout glyph by glyph
+    }
+}
+
 //==============================================================================
 void Graphics::fillRect (int x, int y, int width, int height) const
 {

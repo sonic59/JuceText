@@ -148,13 +148,13 @@ WindowComponent::WindowComponent ()
     addAndMakeVisible (lblTE1Multi = new Label (L"te1 multi",
                                                 L"Multi Line Text"));
     lblTE1Multi->setFont (Font (15.0000f, Font::plain));
-    lblTE1Multi->setJustificationType (Justification::centredLeft);
+    lblTE1Multi->setJustificationType (Justification::topLeft);
     lblTE1Multi->setEditable (false, false, false);
     lblTE1Multi->setColour (Label::outlineColourId, Colours::black);
     lblTE1Multi->setColour (TextEditor::textColourId, Colours::black);
     lblTE1Multi->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (lblTE2Multi = new LayoutLabel (L"te2 multi",
+    addAndMakeVisible (lblTE2Multi = new FrameLabel (L"te2 multi",
                                                 L"Multi Line Text"));
     lblTE2Multi->setFont (Font (15.0000f, Font::plain));
     lblTE2Multi->setJustificationType (Justification::centredLeft);
@@ -278,24 +278,25 @@ void WindowComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == tbOne)
     {
         //[UserButtonCode_tbOne] -- add your button handler code here..
-        readXML("one.xml", lblTE1Short, lblTE2Short);
+        readXMLLayout("one.xml", lblTE1Short, lblTE2Short);
         //[/UserButtonCode_tbOne]
     }
     else if (buttonThatWasClicked == tbTwo)
     {
         //[UserButtonCode_tbTwo] -- add your button handler code here..
-        readXML("two.xml", lblTE1Long, lblTE2Long);
+        readXMLLayout("two.xml", lblTE1Long, lblTE2Long);
         //[/UserButtonCode_tbTwo]
     }
     else if (buttonThatWasClicked == tbThree)
     {
         //[UserButtonCode_tbThree] -- add your button handler code here..
-        readXML("three.xml", lblTE1Multi, lblTE2Multi);
+        //readXMLLayout("three.xml", lblTE1Multi, lblTE2Multi);
         //[/UserButtonCode_tbThree]
     }
     else if (buttonThatWasClicked == tbFour)
     {
         //[UserButtonCode_tbFour] -- add your button handler code here..
+        readXMLFrame("four.xml", lblTE1Multi, lblTE2Multi);
         //[/UserButtonCode_tbFour]
     }
     else if (buttonThatWasClicked == tbFive)
@@ -336,7 +337,7 @@ void WindowComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void WindowComponent::readXML(String xmlFile, Label* labelOne, LayoutLabel* labelTwo)
+void WindowComponent::readXMLLayout(String xmlFile, Label* labelOne, LayoutLabel* labelTwo)
 {
     String xmlPath = File::getSpecialLocation(File::userHomeDirectory).getFullPathName();
     xmlPath += "/Projects/JuceText/SampleText/";
@@ -358,6 +359,49 @@ void WindowComponent::readXML(String xmlFile, Label* labelOne, LayoutLabel* labe
                 labelTwo->setText (e->getAllSubText(), false);
                 counter++;
                 break;
+            }
+        }
+        if (subCounter == counter) counter = 0;
+    }
+}
+
+void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* labelTwo)
+{
+    String xmlPath = File::getSpecialLocation(File::userHomeDirectory).getFullPathName();
+    xmlPath += "/Projects/JuceText/SampleText/";
+    XmlDocument myDocument (File (xmlPath + xmlFile));
+    ScopedPointer<XmlElement> xml (myDocument.getDocumentElement());
+    if (xml != nullptr && xml->hasTagName ("textarray"))
+    {
+        String p1;
+        String p2;
+        int subCounter = 0;
+        forEachXmlChildElement (*xml, e)
+        {
+            if (counter % 2 == 0 && subCounter != counter)
+            {
+                subCounter++;
+                continue;
+            }
+            if (e->hasTagName ("text"))
+            {
+                if (counter % 2 == 0)
+                {
+                    p1 = e->getAllSubText();
+                    counter++;
+                    continue;
+                }
+                else
+                {
+                    p2 = e->getAllSubText();
+                    labelOne->setText (p1 + "\n\n" + p2, false);
+                    StringArray sa (p1);
+                    sa.add("");
+                    sa.add(p2);
+                    labelTwo->setParagraphs (sa, false);
+                    counter++;
+                    break;
+                }
             }
         }
         if (subCounter == counter) counter = 0;
