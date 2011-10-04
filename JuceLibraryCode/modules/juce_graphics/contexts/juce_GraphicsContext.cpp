@@ -315,7 +315,7 @@ void Graphics::drawTextLayout (const String& text,
         && context->clipRegionIntersects (Rectangle<int> (x, y, width, height)))
     {
         // First try to draw using low level renderer
-        int actualHeight = context->drawTextLayout (text, x, y, width, height);
+        int actualHeight = context->drawTextLayout (text, x, y, width, height, false);
         if (actualHeight > 0)
         {
             // Draw was successful so we can stop now
@@ -333,7 +333,7 @@ void Graphics::drawTextFrame (const StringArray& text,
         && context->clipRegionIntersects (Rectangle<int> (x, y, width, height)))
     {
         // First try to draw using low level renderer
-        int actualHeight = context->drawTextLayout (text[0], x, y, width, height);
+        int actualHeight = context->drawTextLayout (text[0], x, y, width, height, true);
         if (actualHeight > 0)
         {
             // Draw was successful, keep using low level renderer for each paragraph
@@ -347,7 +347,7 @@ void Graphics::drawTextFrame (const StringArray& text,
                 }
                 availableHeight -= actualHeight;
                 if (availableHeight <= 0) break;
-                actualHeight = context->drawTextLayout (text[i], x, y + height - availableHeight, width, availableHeight);
+                actualHeight = context->drawTextLayout (text[i], x, y + height - availableHeight, width, availableHeight, true);
             }
             return;
         }

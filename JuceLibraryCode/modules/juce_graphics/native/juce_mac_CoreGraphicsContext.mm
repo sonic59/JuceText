@@ -618,7 +618,7 @@ void CoreGraphicsContext::drawGlyph (int glyphNumber, const AffineTransform& tra
     }
 }
 
-int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const int y, const int width, const int height)
+int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const int y, const int width, const int height, const bool multipleLayouts)
 {
     CTFontRef ctFontRef;
 
@@ -660,18 +660,23 @@ int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const 
     CGPathRelease(path);
     CTFrameDraw(frame, context);
 
-    // Determine Text Height
+    // Return a value > 0 to indicate draw was successful
+    CGFloat textHeight = 1;
 
-    CFArrayRef lines = CTFrameGetLines(frame);
-    CFIndex numLines = CFArrayGetCount(lines);
-    CGFloat textHeight = 0;
-    CFIndex lastLineIndex = numLines - 1;
-    CGFloat descent;
-    CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, lastLineIndex);
-    CTLineGetTypographicBounds(line, NULL,  &descent, NULL);
-    CGPoint lastLineOrigin;
-    CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
-    textHeight =  (CGFloat)height - lastLineOrigin.y + descent;
+    // Return Text Height if displaying multiple Layouts
+    if (multipleLayouts)
+    {
+        CFArrayRef lines = CTFrameGetLines(frame);
+        CFIndex numLines = CFArrayGetCount(lines);
+        textHeight = 0;
+        CFIndex lastLineIndex = numLines - 1;
+        CGFloat descent;
+        CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, lastLineIndex);
+        CTLineGetTypographicBounds(line, NULL,  &descent, NULL);
+        CGPoint lastLineOrigin;
+        CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
+        textHeight =  (CGFloat)height - lastLineOrigin.y + descent;
+    }
 
     CFRelease(frame);
     return (int)textHeight;
