@@ -200,6 +200,7 @@
 #include "properties/juce_SliderPropertyComponent.cpp"
 #include "properties/juce_TextPropertyComponent.cpp"
 #include "widgets/juce_ComboBox.cpp"
+#include "widgets/juce_FrameLabel.cpp"
 #include "widgets/juce_ImageComponent.cpp"
 #include "widgets/juce_Label.cpp"
 #include "widgets/juce_LayoutLabel.cpp"

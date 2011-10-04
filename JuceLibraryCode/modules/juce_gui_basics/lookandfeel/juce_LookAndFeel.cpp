@@ -1384,6 +1384,35 @@ void LookAndFeel::drawLayoutLabel (Graphics& g, LayoutLabel& layoutLabel)
     }
 }
 
+void LookAndFeel::drawFrameLabel (Graphics& g, FrameLabel& frameLabel)
+{
+    g.fillAll (frameLabel.findColour (FrameLabel::backgroundColourId));
+
+    if (! frameLabel.isBeingEdited())
+    {
+        const float alpha = frameLabel.isEnabled() ? 1.0f : 0.5f;
+
+        g.setColour (frameLabel.findColour (FrameLabel::textColourId).withMultipliedAlpha (alpha));
+        g.setFont (frameLabel.getFont());
+        g.drawFittedText (frameLabel.getText(),
+                          frameLabel.getHorizontalBorderSize(),
+                          frameLabel.getVerticalBorderSize(),
+                          frameLabel.getWidth() - 2 * frameLabel.getHorizontalBorderSize(),
+                          frameLabel.getHeight() - 2 * frameLabel.getVerticalBorderSize(),
+                          frameLabel.getJustificationType(),
+                          jmax (1, (int) (frameLabel.getHeight() / frameLabel.getFont().getHeight())),
+                          frameLabel.getMinimumHorizontalScale());
+
+        g.setColour (frameLabel.findColour (FrameLabel::outlineColourId).withMultipliedAlpha (alpha));
+        g.drawRect (0, 0, frameLabel.getWidth(), frameLabel.getHeight());
+    }
+    else if (frameLabel.isEnabled())
+    {
+        g.setColour (frameLabel.findColour (FrameLabel::outlineColourId));
+        g.drawRect (0, 0, frameLabel.getWidth(), frameLabel.getHeight());
+    }
+}
+
 //==============================================================================
 void LookAndFeel::drawLinearSliderBackground (Graphics& g,
                                               int x, int y,

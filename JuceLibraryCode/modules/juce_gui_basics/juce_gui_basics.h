@@ -339,6 +339,9 @@ BEGIN_JUCE_NAMESPACE
 #ifndef __JUCE_COMBOBOX_JUCEHEADER__
  #include "widgets/juce_ComboBox.h"
 #endif
+#ifndef __JUCE_FRAMELABEL_JUCEHEADER__
+#include "widgets/juce_FrameLabel.h"
+#endif
 #ifndef __JUCE_IMAGECOMPONENT_JUCEHEADER__
  #include "widgets/juce_ImageComponent.h"
 #endif
