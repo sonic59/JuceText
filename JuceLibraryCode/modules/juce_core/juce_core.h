@@ -290,6 +290,9 @@ BEGIN_JUCE_NAMESPACE
 #ifndef __JUCE_TARGETPLATFORM_JUCEHEADER__
  #include "system/juce_TargetPlatform.h"
 #endif
+#ifndef __JUCE_ATTRIBUTEDSTRING_JUCEHEADER__
+ #include "text/juce_AttributedString.h"
+#endif
 #ifndef __JUCE_CHARACTERFUNCTIONS_JUCEHEADER__
  #include "text/juce_CharacterFunctions.h"
 #endif
