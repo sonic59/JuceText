@@ -291,6 +291,7 @@ void WindowComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_tbThree] -- add your button handler code here..
         //readXMLLayout("three.xml", lblTE1Multi, lblTE2Multi);
+        counter = 0;
         //[/UserButtonCode_tbThree]
     }
     else if (buttonThatWasClicked == tbFour)
