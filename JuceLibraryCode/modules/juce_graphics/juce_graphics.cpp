@@ -78,6 +78,7 @@
 #include "image_formats/juce_GIFLoader.cpp"
 #include "image_formats/juce_JPEGLoader.cpp"
 #include "image_formats/juce_PNGLoader.cpp"
+#include "fonts/juce_AttributedString.cpp"
 #include "fonts/juce_CustomTypeface.cpp"
 #include "fonts/juce_Font.cpp"
 #include "fonts/juce_GlyphArrangement.cpp"

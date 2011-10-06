@@ -37,6 +37,7 @@ class LowLevelGraphicsContext;
 class Image;
 class FillType;
 class RectangleList;
+class AttributedString;
 
 
 //==============================================================================

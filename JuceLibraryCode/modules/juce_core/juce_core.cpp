@@ -76,7 +76,6 @@
 #include "streams/juce_OutputStream.cpp"
 #include "streams/juce_SubregionStream.cpp"
 #include "system/juce_SystemStats.cpp"
-#include "text/juce_AttributedString.cpp"
 #include "text/juce_CharacterFunctions.cpp"
 #include "text/juce_Identifier.cpp"
 #include "text/juce_LocalisedStrings.cpp"

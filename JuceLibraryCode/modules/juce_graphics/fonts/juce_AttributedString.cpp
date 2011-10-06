@@ -48,4 +48,34 @@ void AttributedString::setText(const String& other)
     text = other;
 }
 
+AttributedString::TextAlignment AttributedString::getTextAlignment() const
+{
+    return textAlignment;
+}
+
+void AttributedString::setTextAlignment(const TextAlignment& other)
+{
+    textAlignment = other;
+}
+
+AttributedString::WordWrap AttributedString::getWordWrap() const
+{
+    return wordWrap;
+}
+
+void AttributedString::setWordWrap(const WordWrap& other)
+{
+    wordWrap = other;
+}
+
+float AttributedString::getLineSpacing() const
+{
+    return lineSpacing;
+}
+
+void AttributedString::setLineSpacing(const float& other)
+{
+    lineSpacing = other;
+}
+
 END_JUCE_NAMESPACE

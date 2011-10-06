@@ -140,6 +140,9 @@ BEGIN_JUCE_NAMESPACE
 #ifndef __JUCE_IMAGEFILEFORMAT_JUCEHEADER__
  #include "images/juce_ImageFileFormat.h"
 #endif
+#ifndef __JUCE_ATTRIBUTEDSTRING_JUCEHEADER__
+ #include "fonts/juce_AttributedString.h"
+#endif
 #ifndef __JUCE_CUSTOMTYPEFACE_JUCEHEADER__
  #include "fonts/juce_CustomTypeface.h"
 #endif

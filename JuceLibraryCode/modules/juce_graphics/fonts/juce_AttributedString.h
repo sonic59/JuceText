@@ -26,6 +26,55 @@
 #ifndef __JUCE_ATTRIBUTEDSTRING_JUCEHEADER__
 #define __JUCE_ATTRIBUTEDSTRING_JUCEHEADER__
 
+class JUCE_API  Attr
+{
+public:
+    enum Attribute
+    {
+        foregroundColour,
+        fontFamily,
+        fontHeight,
+        fontStretch,
+        fontStyle,
+        fontWeight,
+        strikethrough,
+        underline
+    };
+    
+    Attribute attrib;
+    Range<int> range;
+};
+
+class JUCE_API  AttrColour : public Attr
+{
+public:
+    Colour color;
+};
+
+class JUCE_API  AttrString : public Attr
+{
+public:
+    String text;
+};
+
+class JUCE_API  AttrFloat : public Attr
+{
+public:
+    float value;
+};
+
+class JUCE_API  AttrInt : public Attr
+{
+public:
+    int value;
+};
+
+class JUCE_API  AttrBool : public Attr
+{
+public:
+    bool value;
+};
+
 class JUCE_API  AttributedString
 {
 public:
@@ -33,11 +82,38 @@ public:
     AttributedString (const String& other);
     ~AttributedString();
     
+    enum TextAlignment
+    {
+        left,
+        right,
+        center,
+        justified,
+    };
+    
+    enum WordWrap
+    {
+        none,
+        byWord,
+        byChar,
+    };
+    
     String getText() const;
     void setText(const String& other);
+    
+    TextAlignment getTextAlignment() const;
+    void setTextAlignment(const TextAlignment& other);
+    
+    WordWrap getWordWrap() const;
+    void setWordWrap(const WordWrap& other);
+    
+    float getLineSpacing() const;
+    void setLineSpacing(const float& other);
 
 private:
     String text;
+    float lineSpacing;
+    TextAlignment textAlignment;
+    WordWrap wordWrap;
     JUCE_LEAK_DETECTOR (AttributedString);
 };
 

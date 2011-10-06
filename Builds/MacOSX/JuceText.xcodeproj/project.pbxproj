@@ -167,12 +167,12 @@
 		362767D2EF8FBCAA86B63F03 /* juce_DirectoryContentsDisplayComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_DirectoryContentsDisplayComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_DirectoryContentsDisplayComponent.h; sourceTree = SOURCE_ROOT; };
 		368D90EA143B520C0013E28A /* juce_FrameLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_FrameLabel.cpp; path = ../../JuceLibraryCode/modules/juce_gui_basics/widgets/juce_FrameLabel.cpp; sourceTree = "<group>"; };
 		368D90EB143B520C0013E28A /* juce_FrameLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_FrameLabel.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/widgets/juce_FrameLabel.h; sourceTree = "<group>"; };
+		36A1857F143DFB1F003A7DF6 /* juce_AttributedString.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_AttributedString.cpp; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_AttributedString.cpp; sourceTree = "<group>"; };
+		36A18580143DFB1F003A7DF6 /* juce_AttributedString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_AttributedString.h; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_AttributedString.h; sourceTree = "<group>"; };
 		36C62634143A436B00255691 /* WindowComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WindowComponent.cpp; path = ../../Source/WindowComponent.cpp; sourceTree = "<group>"; };
 		36C62635143A436B00255691 /* WindowComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WindowComponent.h; path = ../../Source/WindowComponent.h; sourceTree = "<group>"; };
 		36C62638143A4BCA00255691 /* juce_LayoutLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_LayoutLabel.cpp; path = ../../JuceLibraryCode/modules/juce_gui_basics/widgets/juce_LayoutLabel.cpp; sourceTree = "<group>"; };
 		36C62639143A4BCA00255691 /* juce_LayoutLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_LayoutLabel.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/widgets/juce_LayoutLabel.h; sourceTree = "<group>"; };
-		36EA0FBF143BBA09008E08A7 /* juce_AttributedString.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_AttributedString.cpp; path = ../../JuceLibraryCode/modules/juce_core/text/juce_AttributedString.cpp; sourceTree = "<group>"; };
-		36EA0FC0143BBA09008E08A7 /* juce_AttributedString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_AttributedString.h; path = ../../JuceLibraryCode/modules/juce_core/text/juce_AttributedString.h; sourceTree = "<group>"; };
 		36FA9AE793F7040998A484F7 /* juce_BubbleMessageComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_BubbleMessageComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_extra/misc/juce_BubbleMessageComponent.h; sourceTree = SOURCE_ROOT; };
 		3749DEA4522541365203511C /* juce_ResizableWindow.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_ResizableWindow.cpp; path = ../../JuceLibraryCode/modules/juce_gui_basics/windows/juce_ResizableWindow.cpp; sourceTree = SOURCE_ROOT; };
 		377075F4337F82D80CE55DEB /* juce_win32_Messaging.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_win32_Messaging.cpp; path = ../../JuceLibraryCode/modules/juce_events/native/juce_win32_Messaging.cpp; sourceTree = SOURCE_ROOT; };
@@ -763,8 +763,6 @@
 		0FB57088E2A4DB80DCDAE91F /* text */ = {
 			isa = PBXGroup;
 			children = (
-				36EA0FBF143BBA09008E08A7 /* juce_AttributedString.cpp */,
-				36EA0FC0143BBA09008E08A7 /* juce_AttributedString.h */,
 				DDF9895E729733271FA6146B /* juce_CharacterFunctions.cpp */,
 				2CBA1D631E8A828734D70A44 /* juce_CharacterFunctions.h */,
 				331D9C92B2C0F08C0CD10BDB /* juce_CharPointer_ASCII.h */,
@@ -988,6 +986,8 @@
 		4CDCE678A4597F2521D23DA4 /* fonts */ = {
 			isa = PBXGroup;
 			children = (
+				36A1857F143DFB1F003A7DF6 /* juce_AttributedString.cpp */,
+				36A18580143DFB1F003A7DF6 /* juce_AttributedString.h */,
 				E1B5BA7B5D9703BF2EC892B4 /* juce_CustomTypeface.cpp */,
 				56AECB5160C7D7C2336FF534 /* juce_CustomTypeface.h */,
 				698F0F5972A5D62F4FF9391B /* juce_Font.cpp */,
