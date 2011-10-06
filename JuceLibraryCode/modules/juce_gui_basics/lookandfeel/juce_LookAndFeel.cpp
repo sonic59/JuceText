@@ -1368,7 +1368,7 @@ void LookAndFeel::drawLayoutLabel (Graphics& g, LayoutLabel& layoutLabel)
 
         g.setColour (layoutLabel.findColour (LayoutLabel::textColourId).withMultipliedAlpha (alpha));
         g.setFont (layoutLabel.getFont());
-        g.drawTextLayout (layoutLabel.getText(),
+        g.drawTextLayout (layoutLabel.getAttributedText(),
                           layoutLabel.getHorizontalBorderSize(),
                           layoutLabel.getVerticalBorderSize(),
                           layoutLabel.getWidth() - 2 * layoutLabel.getHorizontalBorderSize(),

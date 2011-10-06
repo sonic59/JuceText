@@ -356,8 +356,9 @@ void WindowComponent::readXMLLayout(String xmlFile, Label* labelOne, LayoutLabel
             }
             if (e->hasTagName ("text"))
             {
+                AttributedString as1 (e->getAllSubText());
                 labelOne->setText (e->getAllSubText(), false);
-                labelTwo->setText (e->getAllSubText(), false);
+                labelTwo->setAttributedText (as1, false);
                 counter++;
                 break;
             }

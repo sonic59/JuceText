@@ -307,10 +307,10 @@ void Graphics::drawFittedText (const String& text,
     }
 }
 
-void Graphics::drawTextLayout (const String& text,
+void Graphics::drawTextLayout (const AttributedString& text,
                                const int x, const int y, const int width, const int height) const
 {
-    if (text.isNotEmpty()
+    if (text.getText().isNotEmpty()
         && width > 0 && height > 0
         && context->clipRegionIntersects (Rectangle<int> (x, y, width, height)))
     {

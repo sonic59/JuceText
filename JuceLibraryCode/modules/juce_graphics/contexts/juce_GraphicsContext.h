@@ -209,7 +209,7 @@ public:
                          float minimumHorizontalScale = 0.7f) const;
 
     // Draw text string inside a rectangle using Text Layout API
-    void drawTextLayout (const String& text,
+    void drawTextLayout (const AttributedString& text,
                          int x, int y, int width, int height) const;
 
     // Draw text strings inside a rectangle using Text Layout API

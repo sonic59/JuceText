@@ -223,6 +223,34 @@ public:
         return true;
     }
 
+    static CFAttributedStringRef getAttributedString(const AttributedString& text)
+    {
+        CTFontRef ctFontRef;
+
+        ctFontRef = CTFontCreateWithName (CFSTR("Lucidia Grande"), 1024, nullptr);
+        CGFontRef fontRef = CTFontCopyGraphicsFont (ctFontRef, nullptr);
+        const int totalHeight = abs (CGFontGetAscent (fontRef)) + abs (CGFontGetDescent (fontRef));
+        float fontHeightToCGSizeFactor = CGFontGetUnitsPerEm (fontRef) / (float) totalHeight;
+        CFRelease(fontRef);
+        CFRelease(ctFontRef);
+
+        ctFontRef = CTFontCreateWithName (CFSTR("Lucidia Grande"), 15.0f * fontHeightToCGSizeFactor, nullptr);
+
+        const short zero = 1;
+        CFNumberRef numberRef = CFNumberCreate (0, kCFNumberShortType, &zero);
+
+        CFStringRef keys[] = { kCTFontAttributeName, kCTLigatureAttributeName };
+        CFTypeRef values[] = { ctFontRef, numberRef };
+        CFDictionaryRef attributedStringAtts;
+        attributedStringAtts = CFDictionaryCreate (nullptr, (const void**) &keys, (const void**) &values, numElementsInArray (keys),
+                                                   &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFRelease (numberRef);
+
+        CFStringRef cfText = text.getText().toCFString();
+        CFAttributedStringRef attribString = CFAttributedStringCreate (kCFAllocatorDefault, cfText, attributedStringAtts);
+        CFRelease (cfText);
+        return attribString;
+    }
     //==============================================================================
     CGFontRef fontRef;
 

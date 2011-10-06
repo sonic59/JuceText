@@ -79,11 +79,33 @@ void LayoutLabel::setText (const String& newText,
     }
 }
 
+void LayoutLabel::setAttributedText (const AttributedString& newText,
+                           const bool broadcastChangeMessage)
+{
+    hideEditor (true);
+
+    attributedTextValue = newText;
+    repaint();
+
+    textWasChanged();
+
+    if (ownerComponent != nullptr)
+        componentMovedOrResized (*ownerComponent, true, true);
+
+    if (broadcastChangeMessage)
+        callChangeListeners();
+}
+
 String LayoutLabel::getText (const bool returnActiveEditorContents) const
 {
     return (returnActiveEditorContents && isBeingEdited())
                 ? editor->getText()
                 : textValue.toString();
+}
+
+AttributedString LayoutLabel::getAttributedText (const bool returnActiveEditorContents) const
+{
+    return attributedTextValue;
 }
 
 void LayoutLabel::valueChanged (Value&)

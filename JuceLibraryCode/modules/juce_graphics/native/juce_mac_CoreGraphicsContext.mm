@@ -618,28 +618,9 @@ void CoreGraphicsContext::drawGlyph (int glyphNumber, const AffineTransform& tra
     }
 }
 
-int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const int y, const int width, const int height, const bool multipleLayouts)
+int CoreGraphicsContext::drawTextLayout (const AttributedString& text, const int x, const int y, const int width, const int height, const bool multipleLayouts)
 {
-    CTFontRef ctFontRef;
-
-    CFStringRef cfName = state->font.getTypefaceName().toCFString();
-    OSXTypeface* osxTypeface = dynamic_cast <OSXTypeface*> (state->font.getTypeface());
-    ctFontRef = CTFontCreateWithName (cfName, ((CGFloat)state->font.getHeight() * osxTypeface->fontHeightToCGSizeFactor), nullptr);
-    CFRelease (cfName);
-
-    const short zero = 1;
-    CFNumberRef numberRef = CFNumberCreate (0, kCFNumberShortType, &zero);
-
-    CFStringRef keys[] = { kCTFontAttributeName, kCTLigatureAttributeName };
-    CFTypeRef values[] = { ctFontRef, numberRef };
-    CFDictionaryRef attributedStringAtts;
-    attributedStringAtts = CFDictionaryCreate (nullptr, (const void**) &keys, (const void**) &values, numElementsInArray (keys),
-                                               &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-    CFRelease (numberRef);
-
-    CFStringRef cfText = text.toCFString();
-    CFAttributedStringRef attribString = CFAttributedStringCreate (kCFAllocatorDefault, cfText, attributedStringAtts);
-    CFRelease (cfText);
+    CFAttributedStringRef attribString = OSXTypeface::getAttributedString(text);
 
     CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
 
@@ -658,9 +639,8 @@ int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const 
     CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
     CFRelease(framesetter);
     CGPathRelease(path);
-    CTFrameDraw(frame, context);
 
-    // Return a value > 0 to indicate draw was successful
+    // Return a value > 0 to indicate low level drawing
     CGFloat textHeight = 1;
 
     // Return Text Height if displaying multiple Layouts
@@ -676,7 +656,11 @@ int CoreGraphicsContext::drawTextLayout (const String& text, const int x, const 
         CGPoint lastLineOrigin;
         CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
         textHeight =  (CGFloat)height - lastLineOrigin.y + descent;
+
+        // Add code here to perform vertical alignment for a single layout before drawing the frame
     }
+
+    CTFrameDraw(frame, context);
 
     CFRelease(frame);
     return (int)textHeight;
