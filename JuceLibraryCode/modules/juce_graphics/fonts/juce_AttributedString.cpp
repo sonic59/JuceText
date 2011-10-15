@@ -78,11 +78,21 @@ void AttributedString::setLineSpacing(const float& other)
     lineSpacing = other;
 }
 
+int AttributedString::getCharAttributesSize() const
+{
+    return charAttributes.size();
+}
+
+Attr* AttributedString::getCharAttribute(const int index) const
+{
+    return charAttributes[index];
+}
+
 void AttributedString::addColour(int start, int end, const Colour& colour)
 {
     Range<int> range(start, end);
     AttrColour* attrcolour = new AttrColour();
-    attrcolour->attrib = Attr::foregroundColour;
+    attrcolour->attribute = Attr::foregroundColour;
     attrcolour->range = range;
     attrcolour->colour = colour;
     Attr* attr = attrcolour;

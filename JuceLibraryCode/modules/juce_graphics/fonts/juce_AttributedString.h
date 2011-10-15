@@ -41,7 +41,7 @@ public:
         underline
     };
 
-    Attribute attrib;
+    Attribute attribute;
     Range<int> range;
 };
 
@@ -108,6 +108,9 @@ public:
 
     float getLineSpacing() const;
     void setLineSpacing(const float& other);
+
+    int getCharAttributesSize() const;
+    Attr* getCharAttribute(const int index) const;
 
     void addColour(int start, int end, const Colour& colour);
 
