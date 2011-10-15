@@ -358,9 +358,18 @@ void WindowComponent::readXMLLayout(String xmlFile, Label* labelOne, LayoutLabel
             {
                 ScopedPointer<AttributedString> as1;
                 as1 = new AttributedString(e->getAllSubText());
-                as1->setForegroundColour(3, 5, Colours::blue);
+                // Test Colored Text
+                //as1->setForegroundColour(3, 5, Colours::blue);
+                // Test Single Font
                 as1->setFontFamily(0, e->getAllSubText().length(), "Lucidia Grande");
                 as1->setFontSize(0, e->getAllSubText().length(), 13.0f);
+                // Test Multiple Fonts
+                /*as1->setFontFamily(0, 5, "Lucidia Grande");
+                as1->setFontSize(0, 5, 13.0f);
+                as1->setFontFamily(6, e->getAllSubText().length(), "Times");
+                as1->setFontSize(6, e->getAllSubText().length(), 13.0f);*/
+                // Test Paragraph Alignment
+                //as1->setTextAlignment(AttributedString::center);
                 labelOne->setText (e->getAllSubText(), false);
                 labelTwo->setAttributedText (as1, false);
                 counter++;
