@@ -29,6 +29,8 @@
 class JUCE_API  Attr
 {
 public:
+    virtual ~Attr() {}
+
     enum Attribute
     {
         foregroundColour,
