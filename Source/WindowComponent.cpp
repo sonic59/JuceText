@@ -359,6 +359,8 @@ void WindowComponent::readXMLLayout(String xmlFile, Label* labelOne, LayoutLabel
                 ScopedPointer<AttributedString> as1;
                 as1 = new AttributedString(e->getAllSubText());
                 as1->setForegroundColour(3, 5, Colours::blue);
+                as1->setFontFamily(0, e->getAllSubText().length(), "Lucidia Grande");
+                as1->setFontSize(0, e->getAllSubText().length(), 13.0f);
                 labelOne->setText (e->getAllSubText(), false);
                 labelTwo->setAttributedText (as1, false);
                 counter++;

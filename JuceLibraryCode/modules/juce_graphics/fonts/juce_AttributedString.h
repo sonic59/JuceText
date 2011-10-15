@@ -113,6 +113,8 @@ public:
     Attr* getCharAttribute(const int index) const;
 
     void setForegroundColour(int start, int end, const Colour& colour);
+    void setFontFamily(int start, int end, const String& family);
+    void setFontSize(int start, int end, const float& size);
 
 private:
     String text;

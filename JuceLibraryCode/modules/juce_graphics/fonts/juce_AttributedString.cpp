@@ -91,11 +91,33 @@ Attr* AttributedString::getCharAttribute(const int index) const
 void AttributedString::setForegroundColour(int start, int end, const Colour& colour)
 {
     Range<int> range(start, end);
-    AttrColour* attrcolour = new AttrColour();
-    attrcolour->attribute = Attr::foregroundColour;
-    attrcolour->range = range;
-    attrcolour->colour = colour;
-    Attr* attr = attrcolour;
+    AttrColour* attrColour = new AttrColour();
+    attrColour->attribute = Attr::foregroundColour;
+    attrColour->range = range;
+    attrColour->colour = colour;
+    Attr* attr = attrColour;
+    charAttributes.add(attr);
+}
+
+void AttributedString::setFontFamily(int start, int end, const String& family)
+{
+    Range<int> range(start, end);
+    AttrString* attrString = new AttrString();
+    attrString->attribute = Attr::fontFamily;
+    attrString->range = range;
+    attrString->text = text;
+    Attr* attr = attrString;
+    charAttributes.add(attr);
+}
+
+void AttributedString::setFontSize(int start, int end, const float& size)
+{
+    Range<int> range(start, end);
+    AttrFloat* attrFloat = new AttrFloat();
+    attrFloat->attribute = Attr::fontSize;
+    attrFloat->range = range;
+    attrFloat->value = size;
+    Attr* attr = attrFloat;
     charAttributes.add(attr);
 }
 
