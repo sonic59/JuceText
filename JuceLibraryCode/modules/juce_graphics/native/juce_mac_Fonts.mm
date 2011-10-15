@@ -227,6 +227,7 @@ public:
     {
         CTFontRef ctFontRef;
 
+        // Get fontHeightToCGSizeFactor
         ctFontRef = CTFontCreateWithName (CFSTR("Lucidia Grande"), 1024, nullptr);
         CGFontRef fontRef = CTFontCopyGraphicsFont (ctFontRef, nullptr);
         const int totalHeight = abs (CGFontGetAscent (fontRef)) + abs (CGFontGetDescent (fontRef));
@@ -236,19 +237,20 @@ public:
 
         ctFontRef = CTFontCreateWithName (CFSTR("Lucidia Grande"), 15.0f * fontHeightToCGSizeFactor, nullptr);
 
+        CFStringRef cfText = text.getText().toCFString();
+        CFMutableAttributedStringRef attribString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
+        CFAttributedStringReplaceString (attribString, CFRangeMake(0, 0), cfText);
+        CFRelease (cfText);
+
+        //    set font attribute
+        CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTFontAttributeName, ctFontRef);
+        CFRelease(ctFontRef);
+        //    set ligature attribute
         const short zero = 1;
         CFNumberRef numberRef = CFNumberCreate (0, kCFNumberShortType, &zero);
-
-        CFStringRef keys[] = { kCTFontAttributeName, kCTLigatureAttributeName };
-        CFTypeRef values[] = { ctFontRef, numberRef };
-        CFDictionaryRef attributedStringAtts;
-        attributedStringAtts = CFDictionaryCreate (nullptr, (const void**) &keys, (const void**) &values, numElementsInArray (keys),
-                                                   &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTLigatureAttributeName, numberRef);
         CFRelease (numberRef);
 
-        CFStringRef cfText = text.getText().toCFString();
-        CFAttributedStringRef attribString = CFAttributedStringCreate (kCFAllocatorDefault, cfText, attributedStringAtts);
-        CFRelease (cfText);
         return attribString;
     }
     //==============================================================================
