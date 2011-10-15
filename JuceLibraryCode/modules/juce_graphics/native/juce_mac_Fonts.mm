@@ -230,21 +230,26 @@ public:
         CFAttributedStringReplaceString (attribString, CFRangeMake(0, 0), cfText);
         CFRelease (cfText);
 
-        //    set font attribute
-        CTFontRef ctFontRef;
-        ctFontRef = CTFontCreateWithName (CFSTR("Lucidia Grande"), 13.0f, nullptr);
-        CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTFontAttributeName, ctFontRef);
-        CFRelease(ctFontRef);
-        //    set ligature attribute
-        const short zero = 1;
-        CFNumberRef numberRef = CFNumberCreate (0, kCFNumberShortType, &zero);
-        CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTLigatureAttributeName, numberRef);
-        CFRelease (numberRef);
-
         int numCharacterAttributes = text.getCharAttributesSize();
         for (int i = 0; i < numCharacterAttributes; ++i)
         {
             Attr* attr = text.getCharAttribute(i);
+            if (attr->attribute == Attr::fontFamily)
+            {
+                for (int j = 0; j < numCharacterAttributes; ++j)
+                {
+                    Attr* attr2 = text.getCharAttribute(i);
+                    if (attr->attribute != Attr::fontSize) continue;
+                    if (attr->range.getStart() != attr2->range.getStart() || attr->range.getEnd() != attr2->range.getEnd()) continue;
+                    AttrString* attrString = static_cast<AttrString*>(attr);
+                    AttrFloat* attrFloat = static_cast<AttrFloat*>(attr2);
+                    CTFontRef ctFontRef;
+                    ctFontRef = CTFontCreateWithName (attrString->text.toCFString(), attrFloat->value, nullptr);
+                    CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTFontAttributeName, ctFontRef);
+                    CFRelease(ctFontRef);
+                }
+
+            }
             if (attr->attribute == Attr::foregroundColour)
             {
                 AttrColour* attrColour = static_cast<AttrColour*>(attr);
