@@ -105,7 +105,7 @@ void AttributedString::setFontFamily(int start, int end, const String& family)
     AttrString* attrString = new AttrString();
     attrString->attribute = Attr::fontFamily;
     attrString->range = range;
-    attrString->text = text;
+    attrString->text = family;
     Attr* attr = attrString;
     charAttributes.add(attr);
 }
