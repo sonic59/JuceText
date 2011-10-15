@@ -33,7 +33,7 @@ public:
     {
         foregroundColour,
         fontFamily,
-        fontHeight,
+        fontSize,
         fontStretch,
         fontStyle,
         fontWeight,
