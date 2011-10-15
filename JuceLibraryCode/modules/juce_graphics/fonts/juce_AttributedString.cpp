@@ -30,7 +30,7 @@ AttributedString::AttributedString()
 {
 }
 
-AttributedString::AttributedString (const String& other) : text(other)
+AttributedString::AttributedString (const String& other) : text(other), lineSpacing(0.0f), textAlignment(AttributedString::left), wordWrap(AttributedString::byWord)
 {
 }
 
