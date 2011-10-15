@@ -234,12 +234,20 @@ public:
         for (int i = 0; i < numCharacterAttributes; ++i)
         {
             Attr* attr = text.getCharAttribute(i);
+            // Character Range Error Checking
+            if (attr->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
+            if (attr->range.getEnd() > CFAttributedStringGetLength(attribString)) attr->range.setEnd(CFAttributedStringGetLength(attribString));
             if (attr->attribute == Attr::fontFamily)
             {
                 for (int j = 0; j < numCharacterAttributes; ++j)
                 {
                     Attr* attr2 = text.getCharAttribute(i);
+                    // Character Range Error Checking
+                    if (attr2->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
+                    if (attr2->range.getEnd() > CFAttributedStringGetLength(attribString)) attr2->range.setEnd(CFAttributedStringGetLength(attribString));
+                    // Ignore all other attributes except for font size
                     if (attr->attribute != Attr::fontSize) continue;
+                    // Make sure that the ranges for font family and font size match
                     if (attr->range.getStart() != attr2->range.getStart() || attr->range.getEnd() != attr2->range.getEnd()) continue;
                     AttrString* attrString = static_cast<AttrString*>(attr);
                     AttrFloat* attrFloat = static_cast<AttrFloat*>(attr2);
@@ -254,11 +262,7 @@ public:
             {
                 AttrColour* attrColour = static_cast<AttrColour*>(attr);
                 CGColorRef colour = CGColorCreateGenericRGB(attrColour->colour.getFloatRed(), attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(), attrColour->colour.getFloatAlpha());
-                if (attrColour->range.getEnd() > CFAttributedStringGetLength(attribString)) attrColour->range.setEnd(CFAttributedStringGetLength(attribString));
-                if (attrColour->range.getStart() <= CFAttributedStringGetLength(attribString))
-                {
-                    CFAttributedStringSetAttribute(attribString, CFRangeMake(attrColour->range.getStart(), attrColour->range.getLength()), kCTForegroundColorAttributeName, colour);
-                }
+                CFAttributedStringSetAttribute(attribString, CFRangeMake(attrColour->range.getStart(), attrColour->range.getLength()), kCTForegroundColorAttributeName, colour);
                 CGColorRelease(colour);
             }
         }
