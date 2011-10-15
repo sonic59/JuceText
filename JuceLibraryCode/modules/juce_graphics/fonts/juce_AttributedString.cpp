@@ -26,7 +26,7 @@
 BEGIN_JUCE_NAMESPACE
 
 //==============================================================================
-AttributedString::AttributedString()
+AttributedString::AttributedString() : text(""), lineSpacing(0.0f), textAlignment(AttributedString::left), wordWrap(AttributedString::byWord)
 {
 }
 
