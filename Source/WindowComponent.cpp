@@ -390,6 +390,8 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
     {
         String p1;
         String p2;
+        AttributedString* as1 = new AttributedString();
+        AttributedString* as2 = new AttributedString();
         int subCounter = 0;
         forEachXmlChildElement (*xml, e)
         {
@@ -403,6 +405,7 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
                 if (counter % 2 == 0)
                 {
                     p1 = e->getAllSubText();
+                    as1->setText(e->getAllSubText());
                     counter++;
                     continue;
                 }
@@ -410,10 +413,14 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
                 {
                     p2 = e->getAllSubText();
                     labelOne->setText (p1 + "\n\n" + p2, false);
-                    StringArray sa (p1);
-                    sa.add("");
-                    sa.add(p2);
-                    labelTwo->setParagraphs (sa, false);
+                    as2->setText(e->getAllSubText());
+                    as2->setTextAlignment(AttributedString::right);
+                    ScopedPointer<OwnedArray<AttributedString> > asa;
+                    asa = new OwnedArray<AttributedString>();
+                    asa->add(as1);
+                    asa->add(new AttributedString());
+                    asa->add(as2);
+                    labelTwo->setParagraphs (asa, false);
                     counter++;
                     break;
                 }

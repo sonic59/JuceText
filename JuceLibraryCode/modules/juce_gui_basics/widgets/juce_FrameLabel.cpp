@@ -45,6 +45,8 @@ FrameLabel::FrameLabel (const String& name,
     setColour (TextEditor::outlineColourId, Colours::transparentBlack);
 
     textValue.addListener (this);
+
+    textValues = new OwnedArray<AttributedString>;
 }
 
 FrameLabel::~FrameLabel()
@@ -79,8 +81,8 @@ void FrameLabel::setText (const String& newText,
     }
 }
 
-void FrameLabel::setParagraphs (const StringArray& newText,
-                          const bool broadcastChangeMessage)
+void FrameLabel::setParagraphs (ScopedPointer<OwnedArray<AttributedString> > newText,
+                                const bool broadcastChangeMessage)
 {
     hideEditor (true);
 
@@ -103,9 +105,9 @@ String FrameLabel::getText (const bool returnActiveEditorContents) const
                 : textValue.toString();
 }
 
-StringArray FrameLabel::getParagraphs (const bool returnActiveEditorContents) const
+OwnedArray<AttributedString>& FrameLabel::getParagraphs (const bool returnActiveEditorContents) const
 {
-    return textValues;
+    return *textValues;
 }
 
 void FrameLabel::valueChanged (Value&)

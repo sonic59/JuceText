@@ -214,7 +214,7 @@ public:
                          int x, int y, int width, int height) const;
 
     // Draw text strings inside a rectangle using Text Layout API
-    void drawTextFrame (const StringArray& text,
+    void drawTextFrame (const OwnedArray<AttributedString>& text,
                          int x, int y, int width, int height) const;
 
     //==============================================================================
