@@ -225,24 +225,14 @@ public:
 
     static CFAttributedStringRef getAttributedString(const AttributedString& text)
     {
-        CTFontRef ctFontRef;
-
-        // Get fontHeightToCGSizeFactor
-        ctFontRef = CTFontCreateWithName (CFSTR("Lucidia Grande"), 1024, nullptr);
-        CGFontRef fontRef = CTFontCopyGraphicsFont (ctFontRef, nullptr);
-        const int totalHeight = abs (CGFontGetAscent (fontRef)) + abs (CGFontGetDescent (fontRef));
-        float fontHeightToCGSizeFactor = CGFontGetUnitsPerEm (fontRef) / (float) totalHeight;
-        CFRelease(fontRef);
-        CFRelease(ctFontRef);
-
-        ctFontRef = CTFontCreateWithName (CFSTR("Lucidia Grande"), 15.0f * fontHeightToCGSizeFactor, nullptr);
-
         CFStringRef cfText = text.getText().toCFString();
         CFMutableAttributedStringRef attribString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
         CFAttributedStringReplaceString (attribString, CFRangeMake(0, 0), cfText);
         CFRelease (cfText);
 
         //    set font attribute
+        CTFontRef ctFontRef;
+        ctFontRef = CTFontCreateWithName (CFSTR("Lucidia Grande"), 13.0f, nullptr);
         CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTFontAttributeName, ctFontRef);
         CFRelease(ctFontRef);
         //    set ligature attribute
@@ -250,6 +240,23 @@ public:
         CFNumberRef numberRef = CFNumberCreate (0, kCFNumberShortType, &zero);
         CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTLigatureAttributeName, numberRef);
         CFRelease (numberRef);
+
+        int numCharacterAttributes = text.getCharAttributesSize();
+        for (int i = 0; i < numCharacterAttributes; ++i)
+        {
+            Attr* attr = text.getCharAttribute(i);
+            if (attr->attribute == Attr::foregroundColour)
+            {
+                AttrColour* attrColour = static_cast<AttrColour*>(attr);
+                CGColorRef colour = CGColorCreateGenericRGB(attrColour->colour.getFloatRed(), attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(), attrColour->colour.getFloatAlpha());
+                if (attrColour->range.getEnd() > CFAttributedStringGetLength(attribString)) attrColour->range.setEnd(CFAttributedStringGetLength(attribString));
+                if (attrColour->range.getStart() <= CFAttributedStringGetLength(attribString))
+                {
+                    CFAttributedStringSetAttribute(attribString, CFRangeMake(attrColour->range.getStart(), attrColour->range.getLength()), kCTForegroundColorAttributeName, colour);
+                }
+                CGColorRelease(colour);
+            }
+        }
 
         return attribString;
     }
