@@ -241,20 +241,22 @@ public:
             {
                 for (int j = 0; j < numCharacterAttributes; ++j)
                 {
-                    Attr* attr2 = text.getCharAttribute(i);
+                    Attr* attr2 = text.getCharAttribute(j);
+                    // Ignore all other attributes except for font size
+                    if (attr2->attribute != Attr::fontSize) continue;
                     // Character Range Error Checking
                     if (attr2->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
                     if (attr2->range.getEnd() > CFAttributedStringGetLength(attribString)) attr2->range.setEnd(CFAttributedStringGetLength(attribString));
-                    // Ignore all other attributes except for font size
-                    if (attr->attribute != Attr::fontSize) continue;
                     // Make sure that the ranges for font family and font size match
                     if (attr->range.getStart() != attr2->range.getStart() || attr->range.getEnd() != attr2->range.getEnd()) continue;
                     AttrString* attrString = static_cast<AttrString*>(attr);
                     AttrFloat* attrFloat = static_cast<AttrFloat*>(attr2);
                     CTFontRef ctFontRef;
                     ctFontRef = CTFontCreateWithName (attrString->text.toCFString(), attrFloat->value, nullptr);
-                    CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTFontAttributeName, ctFontRef);
+                    CFAttributedStringSetAttribute(attribString, CFRangeMake(attrString->range.getStart(), attrString->range.getLength()), kCTFontAttributeName, ctFontRef);
                     CFRelease(ctFontRef);
+                    // We have found the matching size, no need to keep checking
+                    break;
                 }
 
             }
