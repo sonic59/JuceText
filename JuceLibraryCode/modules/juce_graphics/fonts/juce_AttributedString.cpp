@@ -88,7 +88,7 @@ Attr* AttributedString::getCharAttribute(const int index) const
     return charAttributes[index];
 }
 
-void AttributedString::addColour(int start, int end, const Colour& colour)
+void AttributedString::setForegroundColour(int start, int end, const Colour& colour)
 {
     Range<int> range(start, end);
     AttrColour* attrcolour = new AttrColour();
