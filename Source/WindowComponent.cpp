@@ -358,7 +358,7 @@ void WindowComponent::readXMLLayout(String xmlFile, Label* labelOne, LayoutLabel
             {
                 ScopedPointer<AttributedString> as1;
                 as1 = new AttributedString(e->getAllSubText());
-                as1->addColour(3, 5, Colours::blue);
+                as1->setForegroundColour(3, 5, Colours::blue);
                 labelOne->setText (e->getAllSubText(), false);
                 labelTwo->setAttributedText (as1, false);
                 counter++;

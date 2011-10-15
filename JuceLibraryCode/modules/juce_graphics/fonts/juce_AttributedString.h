@@ -112,7 +112,7 @@ public:
     int getCharAttributesSize() const;
     Attr* getCharAttribute(const int index) const;
 
-    void addColour(int start, int end, const Colour& colour);
+    void setForegroundColour(int start, int end, const Colour& colour);
 
 private:
     String text;
