@@ -45,6 +45,8 @@ LayoutLabel::LayoutLabel (const String& name,
     setColour (TextEditor::outlineColourId, Colours::transparentBlack);
 
     textValue.addListener (this);
+
+    attributedTextValue = new AttributedString();
 }
 
 LayoutLabel::~LayoutLabel()
@@ -79,7 +81,7 @@ void LayoutLabel::setText (const String& newText,
     }
 }
 
-void LayoutLabel::setAttributedText (const AttributedString& newText,
+void LayoutLabel::setAttributedText (ScopedPointer<AttributedString> newText,
                            const bool broadcastChangeMessage)
 {
     hideEditor (true);
@@ -103,9 +105,9 @@ String LayoutLabel::getText (const bool returnActiveEditorContents) const
                 : textValue.toString();
 }
 
-AttributedString LayoutLabel::getAttributedText (const bool returnActiveEditorContents) const
+AttributedString& LayoutLabel::getAttributedText (const bool returnActiveEditorContents) const
 {
-    return attributedTextValue;
+    return *attributedTextValue;
 }
 
 void LayoutLabel::valueChanged (Value&)

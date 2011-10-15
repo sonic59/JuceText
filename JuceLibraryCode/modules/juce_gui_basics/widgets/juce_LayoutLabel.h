@@ -65,7 +65,7 @@ public:
     */
     void setText (const String& newText, bool broadcastChangeMessage);
 
-    void setAttributedText (const AttributedString& newText, const bool broadcastChangeMessage);
+    void setAttributedText (ScopedPointer<AttributedString> newText, const bool broadcastChangeMessage);
 
     /** Returns the label's current text.
 
@@ -78,7 +78,7 @@ public:
     */
     String getText (bool returnActiveEditorContents = false) const;
 
-    AttributedString getAttributedText (bool returnActiveEditorContents = false) const;
+    AttributedString& getAttributedText (bool returnActiveEditorContents = false) const;
 
     /** Returns the text content as a Value object.
         You can call Value::referTo() on this object to make the label read and control
@@ -319,7 +319,7 @@ private:
     //==============================================================================
     Value textValue;
     String lastTextValue;
-    AttributedString attributedTextValue;
+    ScopedPointer<AttributedString> attributedTextValue;
     Font font;
     Justification justification;
     ScopedPointer<TextEditor> editor;
