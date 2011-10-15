@@ -229,7 +229,7 @@ public:
         CFMutableAttributedStringRef attribString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
         CFAttributedStringReplaceString (attribString, CFRangeMake(0, 0), cfText);
         CFRelease (cfText);
-
+        // Character Attributes
         int numCharacterAttributes = text.getCharAttributesSize();
         for (int i = 0; i < numCharacterAttributes; ++i)
         {
@@ -239,6 +239,8 @@ public:
             if (attr->range.getEnd() > CFAttributedStringGetLength(attribString)) attr->range.setEnd(CFAttributedStringGetLength(attribString));
             if (attr->attribute == Attr::fontFamily)
             {
+                // Core Text requires the font family and font size to be set together
+                // We must find the matching font size attribute first
                 for (int j = 0; j < numCharacterAttributes; ++j)
                 {
                     Attr* attr2 = text.getCharAttribute(j);
@@ -268,7 +270,32 @@ public:
                 CGColorRelease(colour);
             }
         }
-
+        // Paragraph Attributes
+        CTTextAlignment ctTextAlignment = kCTLeftTextAlignment;
+        CTLineBreakMode ctLineBreakMode = kCTLineBreakByWordWrapping;
+        CGFloat ctLineSpacing = 0.0f;
+        // Set Paragraph Alignment
+        if (text.getTextAlignment() == AttributedString::left) ctTextAlignment = kCTLeftTextAlignment;
+        if (text.getTextAlignment() == AttributedString::right) ctTextAlignment = kCTRightTextAlignment;
+        if (text.getTextAlignment() == AttributedString::center) ctTextAlignment = kCTCenterTextAlignment;
+        if (text.getTextAlignment() == AttributedString::justified) ctTextAlignment = kCTJustifiedTextAlignment;
+        // Set Word Wrap
+        if (text.getWordWrap() == AttributedString::none) ctLineBreakMode = kCTLineBreakByClipping;
+        if (text.getWordWrap() == AttributedString::byWord) ctLineBreakMode = kCTLineBreakByWordWrapping;
+        if (text.getWordWrap() == AttributedString::byChar) ctLineBreakMode = kCTLineBreakByCharWrapping;
+        // Set Line Spacing
+        ctLineSpacing = text.getLineSpacing();
+        // Apply Paragraph Attributes
+        CFIndex numSettings = 3;
+        CTParagraphStyleSetting settings[3] =
+        {
+            { kCTParagraphStyleSpecifierAlignment, sizeof(CTTextAlignment), &ctTextAlignment },
+            { kCTParagraphStyleSpecifierLineBreakMode, sizeof(CTLineBreakMode), &ctLineBreakMode },
+            { kCTParagraphStyleSpecifierLineSpacing, sizeof(CGFloat), &ctLineSpacing }
+        };
+        CTParagraphStyleRef ctParagraphStyleRef = CTParagraphStyleCreate(settings, numSettings);
+        CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTParagraphStyleAttributeName, ctParagraphStyleRef);
+        CFRelease(ctParagraphStyleRef);
         return attribString;
     }
     //==============================================================================
