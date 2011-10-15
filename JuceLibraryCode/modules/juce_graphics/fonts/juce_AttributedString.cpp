@@ -78,4 +78,15 @@ void AttributedString::setLineSpacing(const float& other)
     lineSpacing = other;
 }
 
+void AttributedString::addColour(int start, int end, const Colour& colour)
+{
+    Range<int> range(start, end);
+    AttrColour* attrcolour = new AttrColour();
+    attrcolour->attrib = Attr::foregroundColour;
+    attrcolour->range = range;
+    attrcolour->colour = colour;
+    Attr* attr = attrcolour;
+    charAttributes.add(attr);
+}
+
 END_JUCE_NAMESPACE

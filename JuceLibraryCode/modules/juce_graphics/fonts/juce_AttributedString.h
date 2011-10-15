@@ -40,7 +40,7 @@ public:
         strikethrough,
         underline
     };
-    
+
     Attribute attrib;
     Range<int> range;
 };
@@ -48,7 +48,7 @@ public:
 class JUCE_API  AttrColour : public Attr
 {
 public:
-    Colour color;
+    Colour colour;
 };
 
 class JUCE_API  AttrString : public Attr
@@ -81,7 +81,7 @@ public:
     AttributedString ();
     AttributedString (const String& other);
     ~AttributedString();
-    
+
     enum TextAlignment
     {
         left,
@@ -89,32 +89,35 @@ public:
         center,
         justified,
     };
-    
+
     enum WordWrap
     {
         none,
         byWord,
         byChar,
     };
-    
+
     String getText() const;
     void setText(const String& other);
-    
+
     TextAlignment getTextAlignment() const;
     void setTextAlignment(const TextAlignment& other);
-    
+
     WordWrap getWordWrap() const;
     void setWordWrap(const WordWrap& other);
-    
+
     float getLineSpacing() const;
     void setLineSpacing(const float& other);
+
+    void addColour(int start, int end, const Colour& colour);
 
 private:
     String text;
     float lineSpacing;
     TextAlignment textAlignment;
     WordWrap wordWrap;
-    JUCE_LEAK_DETECTOR (AttributedString);
+    OwnedArray<Attr> charAttributes;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AttributedString);
 };
 
 
