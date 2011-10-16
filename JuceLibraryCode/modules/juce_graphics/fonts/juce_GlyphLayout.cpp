@@ -47,8 +47,9 @@ Glyph& GlyphRun::getGlyph (int index) const
 }
 
 
-GlyphLine::GlyphLine (int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
+GlyphLine::GlyphLine (int numRuns, int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
 {
+    runs.ensureStorageAllocated (numRuns);
 }
 
 GlyphLine::~GlyphLine() {}
@@ -79,6 +80,11 @@ GlyphLine& GlyphLayout::getGlyphLine (int index) const
 int GlyphLayout::getHeight() const
 {
     return 1;
+}
+
+void GlyphLayout::setNumLines(int value)
+{
+    lines.ensureStorageAllocated (value);
 }
 
 void GlyphLayout::setText (const AttributedString& text, const int x, const int y, const int width, const int height)

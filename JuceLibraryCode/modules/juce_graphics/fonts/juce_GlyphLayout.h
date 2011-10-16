@@ -60,7 +60,7 @@ private:
 class JUCE_API  GlyphLine
 {
 public:
-    GlyphLine(int stringStart, int stringEnd);
+    GlyphLine(int numRuns, int stringStart, int stringEnd);
     ~GlyphLine();
 
     int getNumRuns() const noexcept                           { return runs.size(); }
@@ -84,6 +84,7 @@ public:
     GlyphLine& getGlyphLine (int index) const;
     int getHeight () const;
 
+    void setNumLines(int value);
     void setText (const AttributedString& text, const int x, const int y, const int width, const int height);
 
     void draw (const Graphics& g) const;
