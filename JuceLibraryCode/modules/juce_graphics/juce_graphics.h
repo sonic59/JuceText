@@ -152,6 +152,9 @@ BEGIN_JUCE_NAMESPACE
 #ifndef __JUCE_GLYPHARRANGEMENT_JUCEHEADER__
  #include "fonts/juce_GlyphArrangement.h"
 #endif
+#ifndef __JUCE_GLYPHLAYOUT_JUCEHEADER__
+ #include "fonts/juce_GlyphLayout.h"
+#endif
 #ifndef __JUCE_TEXTLAYOUT_JUCEHEADER__
  #include "fonts/juce_TextLayout.h"
 #endif
