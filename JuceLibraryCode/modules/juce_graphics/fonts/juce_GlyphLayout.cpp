@@ -25,102 +25,61 @@
 
 BEGIN_JUCE_NAMESPACE
 
-//==============================================================================
-GlyphLayout::GlyphLayout (const Font& font_, const juce_wchar character_, const int glyph_,
-                                  const float x_, const float y_, const float w_, const bool whitespace_)
-    : font (font_), character (character_), glyph (glyph_),
-      x (x_), y (y_), w (w_), whitespace (whitespace_)
+GlyphRun::GlyphRun ()
 {
 }
 
-GlyphLayout::GlyphLayout (const GlyphLayout& other)
-    : font (other.font), character (other.character), glyph (other.glyph),
-      x (other.x), y (other.y), w (other.w), whitespace (other.whitespace)
+GlyphRun::~GlyphRun() {}
+
+
+PositionedGlyph& GlyphRun::getPositionedGlyph (int index) const
+{
+    jassert (isPositiveAndBelow (index, glyphs.size()));
+
+    return *glyphs [index];
+}
+
+
+GlyphLine::GlyphLine ()
+{
+}
+
+GlyphLine::~GlyphLine() {}
+
+
+GlyphRun& GlyphLine::getGlyphRun (int index) const
+{
+    jassert (isPositiveAndBelow (index, runs.size()));
+
+    return *runs [index];
+}
+
+
+GlyphLayout::GlyphLayout ()
 {
 }
 
 GlyphLayout::~GlyphLayout() {}
 
-GlyphLayout& GlyphLayout::operator= (const GlyphLayout& other)
+
+GlyphLine& GlyphLayout::getGlyphLine (int index) const
 {
-    font = other.font;
-    character = other.character;
-    glyph = other.glyph;
-    x = other.x;
-    y = other.y;
-    w = other.w;
-    whitespace = other.whitespace;
-    return *this;
+    jassert (isPositiveAndBelow (index, lines.size()));
+
+    return *lines [index];
+}
+
+int GlyphLayout::getHeight () const
+{
+    return 1;
+}
+
+void GlyphLayout::setText (const AttributedString& text, const int x, const int y, const int width, const int height)
+{
 }
 
 void GlyphLayout::draw (const Graphics& g) const
 {
-    if (! isWhitespace())
-    {
-        LowLevelGraphicsContext* const context = g.getInternalContext();
-        context->setFont (font);
-        context->drawGlyph (glyph, AffineTransform::translation (x, y));
-    }
 }
-
-void GlyphLayout::draw (const Graphics& g,
-                            const AffineTransform& transform) const
-{
-    if (! isWhitespace())
-    {
-        LowLevelGraphicsContext* const context = g.getInternalContext();
-        context->setFont (font);
-        context->drawGlyph (glyph, AffineTransform::translation (x, y)
-                                                   .followedBy (transform));
-    }
-}
-
-void GlyphLayout::createPath (Path& path) const
-{
-    if (! isWhitespace())
-    {
-        Typeface* const t = font.getTypeface();
-
-        if (t != nullptr)
-        {
-            Path p;
-            t->getOutlineForGlyph (glyph, p);
-
-            path.addPath (p, AffineTransform::scale (font.getHeight() * font.getHorizontalScale(), font.getHeight())
-                                             .translated (x, y));
-        }
-    }
-}
-
-bool GlyphLayout::hitTest (float px, float py) const
-{
-    if (getBounds().contains (px, py) && ! isWhitespace())
-    {
-        Typeface* const t = font.getTypeface();
-
-        if (t != nullptr)
-        {
-            Path p;
-            t->getOutlineForGlyph (glyph, p);
-
-            AffineTransform::translation (-x, -y)
-                            .scaled (1.0f / (font.getHeight() * font.getHorizontalScale()), 1.0f / font.getHeight())
-                            .transformPoint (px, py);
-
-            return p.contains (px, py);
-        }
-    }
-
-    return false;
-}
-
-void GlyphLayout::moveBy (const float deltaX,
-                              const float deltaY)
-{
-    x += deltaX;
-    y += deltaY;
-}
-
-
 
 END_JUCE_NAMESPACE

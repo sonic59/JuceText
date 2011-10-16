@@ -29,75 +29,56 @@
 #include "juce_Font.h"
 #include "../contexts/juce_GraphicsContext.h"
 
+class JUCE_API  GlyphRun
+{
+public:
+    GlyphRun();
+    ~GlyphRun();
 
-//==============================================================================
-/**
-    A glyph from a particular font, with a particular size, style,
-    typeface and position.
+    int getNumLines() const noexcept                           { return glyphs.size(); }
 
-    You should rarely need to use this class directly - for most purposes, the
-    GlyphArrangement class will do what you need for text layout.
+    PositionedGlyph& getPositionedGlyph (int index) const;
 
-    @see GlyphArrangement, Font
-*/
+private:
+    OwnedArray <PositionedGlyph> glyphs;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphRun);
+};
+
+class JUCE_API  GlyphLine
+{
+public:
+    GlyphLine();
+    ~GlyphLine();
+
+    int getNumRuns() const noexcept                           { return runs.size(); }
+
+    GlyphRun& getGlyphRun (int index) const;
+
+private:
+    OwnedArray <GlyphRun> runs;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphLine);
+};
+
 class JUCE_API  GlyphLayout
 {
 public:
-    //==============================================================================
-    GlyphLayout (const Font& font, juce_wchar character, int glyphNumber,
-                     float anchorX, float baselineY, float width, bool isWhitespace);
-
-    GlyphLayout (const GlyphLayout& other);
-    GlyphLayout& operator= (const GlyphLayout& other);
+    GlyphLayout();
     ~GlyphLayout();
 
-    /** Returns the character the glyph represents. */
-    juce_wchar getCharacter() const noexcept    { return character; }
-    /** Checks whether the glyph is actually empty. */
-    bool isWhitespace() const noexcept          { return whitespace; }
+    int getNumLines() const noexcept                           { return lines.size(); }
+    GlyphLine& getGlyphLine (int index) const;
+    int getHeight () const;
 
-    /** Returns the position of the glyph's left-hand edge. */
-    float getLeft() const noexcept              { return x; }
-    /** Returns the position of the glyph's right-hand edge. */
-    float getRight() const noexcept             { return x + w; }
-    /** Returns the y position of the glyph's baseline. */
-    float getBaselineY() const noexcept         { return y; }
-    /** Returns the y position of the top of the glyph. */
-    float getTop() const                        { return y - font.getAscent(); }
-    /** Returns the y position of the bottom of the glyph. */
-    float getBottom() const                     { return y + font.getDescent(); }
-    /** Returns the bounds of the glyph. */
-    Rectangle<float> getBounds() const          { return Rectangle<float> (x, getTop(), w, font.getHeight()); }
+    void setText (const AttributedString& text, const int x, const int y, const int width, const int height);
 
-    //==============================================================================
-    /** Shifts the glyph's position by a relative amount. */
-    void moveBy (float deltaX, float deltaY);
-
-    //==============================================================================
-    /** Draws the glyph into a graphics context. */
     void draw (const Graphics& g) const;
 
-    /** Draws the glyph into a graphics context, with an extra transform applied to it. */
-    void draw (const Graphics& g, const AffineTransform& transform) const;
-
-    /** Returns the path for this glyph.
-
-        @param path     the glyph's outline will be appended to this path
-    */
-    void createPath (Path& path) const;
-
-    /** Checks to see if a point lies within this glyph. */
-    bool hitTest (float x, float y) const;
-
 private:
-    //==============================================================================
-    Font font;
-    juce_wchar character;
-    int glyph;
-    float x, y, w;
-    bool whitespace;
+    OwnedArray <GlyphLine> lines;
 
-    JUCE_LEAK_DETECTOR (GlyphLayout);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphLayout);
 };
 
 
