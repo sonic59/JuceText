@@ -85,6 +85,7 @@
 #include "fonts/juce_GlyphLayout.cpp"
 #include "fonts/juce_TextLayout.cpp"
 #include "fonts/juce_Typeface.cpp"
+#include "fonts/juce_TypeLayout.cpp"
 #include "effects/juce_DropShadowEffect.cpp"
 #include "effects/juce_GlowEffect.cpp"
 // END_AUTOINCLUDE

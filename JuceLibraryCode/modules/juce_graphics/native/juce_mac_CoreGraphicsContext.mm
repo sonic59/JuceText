@@ -620,50 +620,15 @@ void CoreGraphicsContext::drawGlyph (int glyphNumber, const AffineTransform& tra
 
 int CoreGraphicsContext::drawTextLayout (const AttributedString& text, const int x, const int y, const int width, const int height, const bool multipleLayouts)
 {
-    CFAttributedStringRef attribString = OSXTypeface::getAttributedString(text);
-
-    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
-
-    CFRelease(attribString);
-
-    CGContextSetTextMatrix (context, state->fontTransform);
-
-    // Initialize a rectangular path.
-
-    CGMutablePathRef path = CGPathCreateMutable();
-    CGRect bounds = CGRectMake((CGFloat)x, flipHeight - ((CGFloat)y + (CGFloat)height), (CGFloat)width, (CGFloat)height);
-    CGPathAddRect(path, NULL, bounds);
-
-    // Create the frame and draw it into the graphics context
-
-    CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
-    CFRelease(framesetter);
-    CGPathRelease(path);
-
-    // Return a value > 0 to indicate low level drawing
-    CGFloat textHeight = 1;
-
-    // Return Text Height if displaying multiple Layouts
-    if (multipleLayouts)
-    {
-        CFArrayRef lines = CTFrameGetLines(frame);
-        CFIndex numLines = CFArrayGetCount(lines);
-        textHeight = 0;
-        CFIndex lastLineIndex = numLines - 1;
-        CGFloat descent;
-        CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, lastLineIndex);
-        CTLineGetTypographicBounds(line, NULL,  &descent, NULL);
-        CGPoint lastLineOrigin;
-        CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
-        textHeight =  (CGFloat)height - lastLineOrigin.y + descent;
-
-        // Add code here to perform vertical alignment for a single layout before drawing the frame
-    }
-
-    CTFrameDraw(frame, context);
-
-    CFRelease(frame);
-    return (int)textHeight;
+    #if (JUCE_MAC && defined (MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5 \
+    && MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_5) \
+    || (JUCE_IOS && defined (__IPHONE_3_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_2)
+    // Core Text is Available, Use Core Text to render directly to the context
+    return CoreTextTypeLayout::drawTextLayout (text, x, y, width, height, multipleLayouts, context, flipHeight);
+    #else
+    // Core Text is not available, Force usage of software renderer
+    return 0;
+    #endif
 }
 
 CoreGraphicsContext::SavedState::SavedState()

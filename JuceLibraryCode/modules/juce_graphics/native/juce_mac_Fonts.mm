@@ -31,6 +31,171 @@
 
 #if JUCE_CORETEXT_AVAILABLE
 
+class CoreTextTypeLayout : public TypeLayout
+{
+public:
+    CoreTextTypeLayout() {}
+
+    static CFAttributedStringRef getAttributedString(const AttributedString& text)
+    {
+        CFStringRef cfText = text.getText().toCFString();
+        CFMutableAttributedStringRef attribString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
+        CFAttributedStringReplaceString (attribString, CFRangeMake(0, 0), cfText);
+        CFRelease (cfText);
+        // Character Attributes
+        int numCharacterAttributes = text.getCharAttributesSize();
+        for (int i = 0; i < numCharacterAttributes; ++i)
+        {
+            Attr* attr = text.getCharAttribute(i);
+            // Character Range Error Checking
+            if (attr->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
+            if (attr->range.getEnd() > CFAttributedStringGetLength(attribString)) attr->range.setEnd(CFAttributedStringGetLength(attribString));
+            if (attr->attribute == Attr::fontFamily)
+            {
+                // Core Text requires the font family and font size to be set together
+                // We must find the matching font size attribute first
+                for (int j = 0; j < numCharacterAttributes; ++j)
+                {
+                    Attr* attr2 = text.getCharAttribute(j);
+                    // Ignore all other attributes except for font size
+                    if (attr2->attribute != Attr::fontSize) continue;
+                    // Character Range Error Checking
+                    if (attr2->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
+                    if (attr2->range.getEnd() > CFAttributedStringGetLength(attribString)) attr2->range.setEnd(CFAttributedStringGetLength(attribString));
+                    // Make sure that the ranges for font family and font size match
+                    if (attr->range.getStart() != attr2->range.getStart() || attr->range.getEnd() != attr2->range.getEnd()) continue;
+                    AttrString* attrString = static_cast<AttrString*>(attr);
+                    AttrFloat* attrFloat = static_cast<AttrFloat*>(attr2);
+                    CTFontRef ctFontRef;
+                    ctFontRef = CTFontCreateWithName (attrString->text.toCFString(), attrFloat->value, nullptr);
+                    CFAttributedStringSetAttribute(attribString, CFRangeMake(attrString->range.getStart(), attrString->range.getLength()), kCTFontAttributeName, ctFontRef);
+                    CFRelease(ctFontRef);
+                    // We have found the matching size, no need to keep checking
+                    break;
+                }
+            }
+            if (attr->attribute == Attr::foregroundColour)
+            {
+                AttrColour* attrColour = static_cast<AttrColour*>(attr);
+                CGColorRef colour = CGColorCreateGenericRGB(attrColour->colour.getFloatRed(), attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(), attrColour->colour.getFloatAlpha());
+                CFAttributedStringSetAttribute(attribString, CFRangeMake(attrColour->range.getStart(), attrColour->range.getLength()), kCTForegroundColorAttributeName, colour);
+                CGColorRelease(colour);
+            }
+        }
+        // Paragraph Attributes
+        CTTextAlignment ctTextAlignment = kCTLeftTextAlignment;
+        CTLineBreakMode ctLineBreakMode = kCTLineBreakByWordWrapping;
+        CGFloat ctLineSpacing = 0.0f;
+        // Set Paragraph Alignment
+        if (text.getTextAlignment() == AttributedString::left) ctTextAlignment = kCTLeftTextAlignment;
+        if (text.getTextAlignment() == AttributedString::right) ctTextAlignment = kCTRightTextAlignment;
+        if (text.getTextAlignment() == AttributedString::center) ctTextAlignment = kCTCenterTextAlignment;
+        if (text.getTextAlignment() == AttributedString::justified) ctTextAlignment = kCTJustifiedTextAlignment;
+        // Set Word Wrap
+        if (text.getWordWrap() == AttributedString::none) ctLineBreakMode = kCTLineBreakByClipping;
+        if (text.getWordWrap() == AttributedString::byWord) ctLineBreakMode = kCTLineBreakByWordWrapping;
+        if (text.getWordWrap() == AttributedString::byChar) ctLineBreakMode = kCTLineBreakByCharWrapping;
+        // Set Line Spacing
+        ctLineSpacing = text.getLineSpacing();
+        // Apply Paragraph Attributes
+        CFIndex numSettings = 3;
+        CTParagraphStyleSetting settings[3] =
+        {
+            { kCTParagraphStyleSpecifierAlignment, sizeof(CTTextAlignment), &ctTextAlignment },
+            { kCTParagraphStyleSpecifierLineBreakMode, sizeof(CTLineBreakMode), &ctLineBreakMode },
+            { kCTParagraphStyleSpecifierLineSpacing, sizeof(CGFloat), &ctLineSpacing }
+        };
+        CTParagraphStyleRef ctParagraphStyleRef = CTParagraphStyleCreate(settings, numSettings);
+        CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTParagraphStyleAttributeName, ctParagraphStyleRef);
+        CFRelease(ctParagraphStyleRef);
+        return attribString;
+    }
+
+    static int drawTextLayout (const AttributedString& text, const int x, const int y, const int width, const int height, const bool multipleLayouts, const CGContextRef& context, const float flipHeight)
+    {
+        CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString(text);
+
+        CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
+
+        CFRelease(attribString);
+
+        // Initialize a rectangular path.
+
+        CGMutablePathRef path = CGPathCreateMutable();
+        CGRect bounds = CGRectMake((CGFloat)x, flipHeight - ((CGFloat)y + (CGFloat)height), (CGFloat)width, (CGFloat)height);
+        CGPathAddRect(path, NULL, bounds);
+
+        // Create the frame and draw it into the graphics context
+
+        CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
+        CFRelease(framesetter);
+        CGPathRelease(path);
+
+        // Return a value > 0 to indicate software rendering is not necessary
+        CGFloat textHeight = 1;
+
+        // Return Text Height if displaying multiple Layouts
+        if (multipleLayouts)
+        {
+            CFArrayRef lines = CTFrameGetLines(frame);
+            CFIndex numLines = CFArrayGetCount(lines);
+            CFIndex lastLineIndex = numLines - 1;
+            CGFloat descent;
+            CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, lastLineIndex);
+            CTLineGetTypographicBounds(line, NULL,  &descent, NULL);
+            CGPoint lastLineOrigin;
+            CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
+            textHeight =  (CGFloat)height - lastLineOrigin.y + descent;
+
+            // Add code here to perform vertical alignment for a single layout before drawing the frame
+        }
+
+        CTFrameDraw(frame, context);
+
+        CFRelease(frame);
+        return (int)textHeight;
+    }
+
+    void getGlyphLayout (const AttributedString& text, const int x, const int y, const int width, const int height, GlyphLayout& layout)
+    {
+        CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString(text);
+
+        CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
+
+        CFRelease(attribString);
+
+        // Initialize a rectangular path.
+        CGMutablePathRef path = CGPathCreateMutable();
+        CGRect bounds = CGRectMake((CGFloat)x, (CGFloat)y, (CGFloat)width, (CGFloat)height);
+        CGPathAddRect(path, NULL, bounds);
+
+        // Create the frame and draw it into the graphics context
+        CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
+        CFRelease(framesetter);
+        CGPathRelease(path);
+
+        CFArrayRef lines = CTFrameGetLines(frame);
+        CFIndex numLines = CFArrayGetCount(lines);
+        CFIndex lastLineIndex = numLines - 1;
+        CGFloat descent;
+        CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, lastLineIndex);
+        CTLineGetTypographicBounds(line, NULL,  &descent, NULL);
+        CGPoint lastLineOrigin;
+        CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
+        CGFloat layoutHeight =  (CGFloat)height - lastLineOrigin.y + descent;
+        // TODO: Fill GlyphLayout class
+
+        CFRelease(frame);
+    }
+private:
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CoreTextTypeLayout);
+};
+
+TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
+{
+    return new CoreTextTypeLayout();
+}
+
 //==============================================================================
 class OSXTypeface  : public Typeface
 {
@@ -223,81 +388,6 @@ public:
         return true;
     }
 
-    static CFAttributedStringRef getAttributedString(const AttributedString& text)
-    {
-        CFStringRef cfText = text.getText().toCFString();
-        CFMutableAttributedStringRef attribString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
-        CFAttributedStringReplaceString (attribString, CFRangeMake(0, 0), cfText);
-        CFRelease (cfText);
-        // Character Attributes
-        int numCharacterAttributes = text.getCharAttributesSize();
-        for (int i = 0; i < numCharacterAttributes; ++i)
-        {
-            Attr* attr = text.getCharAttribute(i);
-            // Character Range Error Checking
-            if (attr->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
-            if (attr->range.getEnd() > CFAttributedStringGetLength(attribString)) attr->range.setEnd(CFAttributedStringGetLength(attribString));
-            if (attr->attribute == Attr::fontFamily)
-            {
-                // Core Text requires the font family and font size to be set together
-                // We must find the matching font size attribute first
-                for (int j = 0; j < numCharacterAttributes; ++j)
-                {
-                    Attr* attr2 = text.getCharAttribute(j);
-                    // Ignore all other attributes except for font size
-                    if (attr2->attribute != Attr::fontSize) continue;
-                    // Character Range Error Checking
-                    if (attr2->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
-                    if (attr2->range.getEnd() > CFAttributedStringGetLength(attribString)) attr2->range.setEnd(CFAttributedStringGetLength(attribString));
-                    // Make sure that the ranges for font family and font size match
-                    if (attr->range.getStart() != attr2->range.getStart() || attr->range.getEnd() != attr2->range.getEnd()) continue;
-                    AttrString* attrString = static_cast<AttrString*>(attr);
-                    AttrFloat* attrFloat = static_cast<AttrFloat*>(attr2);
-                    CTFontRef ctFontRef;
-                    ctFontRef = CTFontCreateWithName (attrString->text.toCFString(), attrFloat->value, nullptr);
-                    CFAttributedStringSetAttribute(attribString, CFRangeMake(attrString->range.getStart(), attrString->range.getLength()), kCTFontAttributeName, ctFontRef);
-                    CFRelease(ctFontRef);
-                    // We have found the matching size, no need to keep checking
-                    break;
-                }
-
-            }
-            if (attr->attribute == Attr::foregroundColour)
-            {
-                AttrColour* attrColour = static_cast<AttrColour*>(attr);
-                CGColorRef colour = CGColorCreateGenericRGB(attrColour->colour.getFloatRed(), attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(), attrColour->colour.getFloatAlpha());
-                CFAttributedStringSetAttribute(attribString, CFRangeMake(attrColour->range.getStart(), attrColour->range.getLength()), kCTForegroundColorAttributeName, colour);
-                CGColorRelease(colour);
-            }
-        }
-        // Paragraph Attributes
-        CTTextAlignment ctTextAlignment = kCTLeftTextAlignment;
-        CTLineBreakMode ctLineBreakMode = kCTLineBreakByWordWrapping;
-        CGFloat ctLineSpacing = 0.0f;
-        // Set Paragraph Alignment
-        if (text.getTextAlignment() == AttributedString::left) ctTextAlignment = kCTLeftTextAlignment;
-        if (text.getTextAlignment() == AttributedString::right) ctTextAlignment = kCTRightTextAlignment;
-        if (text.getTextAlignment() == AttributedString::center) ctTextAlignment = kCTCenterTextAlignment;
-        if (text.getTextAlignment() == AttributedString::justified) ctTextAlignment = kCTJustifiedTextAlignment;
-        // Set Word Wrap
-        if (text.getWordWrap() == AttributedString::none) ctLineBreakMode = kCTLineBreakByClipping;
-        if (text.getWordWrap() == AttributedString::byWord) ctLineBreakMode = kCTLineBreakByWordWrapping;
-        if (text.getWordWrap() == AttributedString::byChar) ctLineBreakMode = kCTLineBreakByCharWrapping;
-        // Set Line Spacing
-        ctLineSpacing = text.getLineSpacing();
-        // Apply Paragraph Attributes
-        CFIndex numSettings = 3;
-        CTParagraphStyleSetting settings[3] =
-        {
-            { kCTParagraphStyleSpecifierAlignment, sizeof(CTTextAlignment), &ctTextAlignment },
-            { kCTParagraphStyleSpecifierLineBreakMode, sizeof(CTLineBreakMode), &ctLineBreakMode },
-            { kCTParagraphStyleSpecifierLineSpacing, sizeof(CGFloat), &ctLineSpacing }
-        };
-        CTParagraphStyleRef ctParagraphStyleRef = CTParagraphStyleCreate(settings, numSettings);
-        CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTParagraphStyleAttributeName, ctParagraphStyleRef);
-        CFRelease(ctParagraphStyleRef);
-        return attribString;
-    }
     //==============================================================================
     CGFontRef fontRef;
 

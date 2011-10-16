@@ -161,6 +161,9 @@ BEGIN_JUCE_NAMESPACE
 #ifndef __JUCE_TYPEFACE_JUCEHEADER__
  #include "fonts/juce_Typeface.h"
 #endif
+#ifndef __JUCE_TYPELAYOUT_JUCEHEADER__
+ #include "fonts/juce_TypeLayout.h"
+#endif
 #ifndef __JUCE_DROPSHADOWEFFECT_JUCEHEADER__
  #include "effects/juce_DropShadowEffect.h"
 #endif

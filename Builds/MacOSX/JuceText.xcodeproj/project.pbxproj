@@ -169,6 +169,8 @@
 		368D90EB143B520C0013E28A /* juce_FrameLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_FrameLabel.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/widgets/juce_FrameLabel.h; sourceTree = "<group>"; };
 		36901F34144B16A600CDC9EB /* juce_GlyphLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_GlyphLayout.cpp; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_GlyphLayout.cpp; sourceTree = "<group>"; };
 		36901F35144B16A600CDC9EB /* juce_GlyphLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_GlyphLayout.h; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_GlyphLayout.h; sourceTree = "<group>"; };
+		36901F38144B5F8400CDC9EB /* juce_TypeLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_TypeLayout.h; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_TypeLayout.h; sourceTree = "<group>"; };
+		36901F39144B64EA00CDC9EB /* juce_TypeLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_TypeLayout.cpp; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_TypeLayout.cpp; sourceTree = "<group>"; };
 		36A1857F143DFB1F003A7DF6 /* juce_AttributedString.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_AttributedString.cpp; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_AttributedString.cpp; sourceTree = "<group>"; };
 		36A18580143DFB1F003A7DF6 /* juce_AttributedString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_AttributedString.h; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_AttributedString.h; sourceTree = "<group>"; };
 		36C62634143A436B00255691 /* WindowComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WindowComponent.cpp; path = ../../Source/WindowComponent.cpp; sourceTree = "<group>"; };
@@ -988,6 +990,8 @@
 		4CDCE678A4597F2521D23DA4 /* fonts */ = {
 			isa = PBXGroup;
 			children = (
+				36901F39144B64EA00CDC9EB /* juce_TypeLayout.cpp */,
+				36901F38144B5F8400CDC9EB /* juce_TypeLayout.h */,
 				36901F34144B16A600CDC9EB /* juce_GlyphLayout.cpp */,
 				36901F35144B16A600CDC9EB /* juce_GlyphLayout.h */,
 				36A1857F143DFB1F003A7DF6 /* juce_AttributedString.cpp */,
