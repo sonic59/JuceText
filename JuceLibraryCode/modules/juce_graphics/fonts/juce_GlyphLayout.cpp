@@ -25,8 +25,9 @@
 
 BEGIN_JUCE_NAMESPACE
 
-GlyphRun::GlyphRun ()
+GlyphRun::GlyphRun (int numGlyphs, int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
 {
+    glyphs.ensureStorageAllocated (numGlyphs);
 }
 
 GlyphRun::~GlyphRun() {}
@@ -40,7 +41,7 @@ PositionedGlyph& GlyphRun::getPositionedGlyph (int index) const
 }
 
 
-GlyphLine::GlyphLine ()
+GlyphLine::GlyphLine (int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
 {
 }
 
@@ -69,13 +70,15 @@ GlyphLine& GlyphLayout::getGlyphLine (int index) const
     return *lines [index];
 }
 
-int GlyphLayout::getHeight () const
+int GlyphLayout::getHeight() const
 {
     return 1;
 }
 
 void GlyphLayout::setText (const AttributedString& text, const int x, const int y, const int width, const int height)
 {
+    TypeLayout::Ptr typeLayout = TypeLayout::createSystemTypeLayout();
+    typeLayout->getGlyphLayout (text, x, y, width, height, *this);
 }
 
 void GlyphLayout::draw (const Graphics& g) const

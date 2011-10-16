@@ -32,7 +32,7 @@
 class JUCE_API  GlyphRun
 {
 public:
-    GlyphRun();
+    GlyphRun(int numGlyphs, int stringStart, int stringEnd);
     ~GlyphRun();
 
     int getNumLines() const noexcept                           { return glyphs.size(); }
@@ -41,6 +41,7 @@ public:
 
 private:
     OwnedArray <PositionedGlyph> glyphs;
+    Range<int> stringRange;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphRun);
 };
@@ -48,7 +49,7 @@ private:
 class JUCE_API  GlyphLine
 {
 public:
-    GlyphLine();
+    GlyphLine(int stringStart, int stringEnd);
     ~GlyphLine();
 
     int getNumRuns() const noexcept                           { return runs.size(); }
@@ -57,6 +58,7 @@ public:
 
 private:
     OwnedArray <GlyphRun> runs;
+    Range<int> stringRange;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphLine);
 };

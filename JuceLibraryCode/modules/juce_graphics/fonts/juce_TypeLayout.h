@@ -32,7 +32,7 @@ public:
     /** A handy typedef for a pointer to a typeface. */
     typedef ReferenceCountedObjectPtr <TypeLayout> Ptr;
 
-    static Ptr createSystemTypeLayout ();
+    static Ptr createSystemTypeLayout();
 
     virtual ~TypeLayout();
 
