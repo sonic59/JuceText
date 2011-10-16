@@ -29,6 +29,17 @@
 #include "juce_Font.h"
 #include "../contexts/juce_GraphicsContext.h"
 
+class JUCE_API  Glyph
+{
+public:
+    Glyph();
+    ~Glyph();
+
+private:
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Glyph);
+};
+
 class JUCE_API  GlyphRun
 {
 public:
@@ -37,10 +48,10 @@ public:
 
     int getNumLines() const noexcept                           { return glyphs.size(); }
 
-    PositionedGlyph& getPositionedGlyph (int index) const;
+    Glyph& getGlyph (int index) const;
 
 private:
-    OwnedArray <PositionedGlyph> glyphs;
+    OwnedArray <Glyph> glyphs;
     Range<int> stringRange;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphRun);

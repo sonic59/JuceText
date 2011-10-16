@@ -25,6 +25,12 @@
 
 BEGIN_JUCE_NAMESPACE
 
+Glyph::Glyph ()
+{
+}
+
+Glyph::~Glyph() {}
+
 GlyphRun::GlyphRun (int numGlyphs, int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
 {
     glyphs.ensureStorageAllocated (numGlyphs);
@@ -33,7 +39,7 @@ GlyphRun::GlyphRun (int numGlyphs, int stringStart, int stringEnd) : stringRange
 GlyphRun::~GlyphRun() {}
 
 
-PositionedGlyph& GlyphRun::getPositionedGlyph (int index) const
+Glyph& GlyphRun::getGlyph (int index) const
 {
     jassert (isPositiveAndBelow (index, glyphs.size()));
 
