@@ -196,8 +196,24 @@ void GlyphLayout::addGlyphLine (const GlyphLine* glyphLine)
 
 void GlyphLayout::draw (const Graphics& g) const
 {
-    TypeLayout::Ptr typeLayout = TypeLayout::createSystemTypeLayout();
-    typeLayout->draw (g, *this);
+    LowLevelGraphicsContext* const context = g.getInternalContext();
+    float xOffset = getX();
+    float currentLineOffset = getY();
+    for (int i = 0; i < getNumLines(); ++i)
+    {
+        GlyphLine& glyphLine = getGlyphLine(i);
+        currentLineOffset += glyphLine.getAscent();
+        for (int j = 0; j < glyphLine.getNumRuns(); ++j)
+        {
+            GlyphRun& glyphRun = glyphLine.getGlyphRun(j);
+            for (int k = 0; k < glyphRun.getNumGlyphs(); ++k)
+            {
+                Glyph& glyph = glyphRun.getGlyph(k);
+                context->drawGlyph (glyph.getGlyphCode(), AffineTransform::translation (xOffset + glyph.getLineXOffset(), currentLineOffset + glyph.getLineYOffset()));
+            }
+        }
+        currentLineOffset += glyphLine.getDescent() + glyphLine.getLeading();
+    }
 }
 
 END_JUCE_NAMESPACE
