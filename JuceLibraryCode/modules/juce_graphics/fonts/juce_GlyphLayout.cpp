@@ -55,7 +55,9 @@ void GlyphRun::addGlyph (Glyph* glyph)
 
 //==============================================================================
 
-GlyphLine::GlyphLine (int numRuns, int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
+GlyphLine::GlyphLine (int numRuns, int stringStart, int stringEnd, float ascent_,
+                      float descent_, float leading_) : stringRange(stringStart, stringEnd),
+                      ascent(ascent_), descent(descent_), leading(leading_)
 {
     runs.ensureStorageAllocated (numRuns);
 }

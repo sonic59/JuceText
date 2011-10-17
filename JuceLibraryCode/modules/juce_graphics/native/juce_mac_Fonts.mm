@@ -181,7 +181,12 @@ public:
             CFIndex numRuns = CFArrayGetCount(runs);
             CFRange lineStringRange = CTLineGetStringRange(line);
             CFIndex lineStringEnd = lineStringRange.location + lineStringRange.length - 1;
-            GlyphLine* glyphLine = new GlyphLine((int) numRuns, (int) lineStringRange.location, (int) lineStringEnd);
+            CGFloat ascent;
+            CGFloat descent;
+            CGFloat leading;
+            CTLineGetTypographicBounds(line, &ascent,  &descent, &leading);
+            GlyphLine* glyphLine = new GlyphLine((int) numRuns, (int) lineStringRange.location, (int) lineStringEnd,
+                                                 (float) ascent, (float) descent, (float) leading);
             for (CFIndex j = 0; j < numRuns; ++j)
             {
                 CTRunRef run = (CTRunRef) CFArrayGetValueAtIndex (runs, j);

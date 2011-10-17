@@ -64,7 +64,7 @@ private:
 class JUCE_API  GlyphLine
 {
 public:
-    GlyphLine(int numRuns, int stringStart, int stringEnd);
+    GlyphLine(int numRuns, int stringStart, int stringEnd, float ascent, float descent, float leading);
     ~GlyphLine();
 
     int getNumRuns() const noexcept                           { return runs.size(); }
@@ -76,6 +76,9 @@ public:
 private:
     OwnedArray <GlyphRun> runs;
     Range<int> stringRange;
+    float ascent;
+    float descent;
+    float leading;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphLine);
 };
