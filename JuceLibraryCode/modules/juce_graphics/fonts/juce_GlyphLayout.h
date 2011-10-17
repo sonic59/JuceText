@@ -71,6 +71,9 @@ public:
     ~GlyphLine();
 
     int getNumRuns() const;
+    float getAscent() const;
+    float getDescent() const;
+    float getLeading() const;
     GlyphRun& getGlyphRun (int index) const;
 
     void addGlyphRun (GlyphRun* glyphRun);

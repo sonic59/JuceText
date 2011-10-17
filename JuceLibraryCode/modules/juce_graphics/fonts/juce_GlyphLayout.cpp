@@ -94,6 +94,21 @@ int GlyphLine::getNumRuns() const
     return runs.size();
 }
 
+float GlyphLine::getAscent() const
+{
+    return ascent;
+}
+
+float GlyphLine::getDescent() const
+{
+    return descent;
+}
+
+float GlyphLine::getLeading() const
+{
+    return leading;
+}
+
 GlyphRun& GlyphLine::getGlyphRun (int index) const
 {
     jassert (isPositiveAndBelow (index, runs.size()));
