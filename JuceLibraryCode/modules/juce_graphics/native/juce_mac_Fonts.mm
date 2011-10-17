@@ -114,9 +114,7 @@ public:
     static int drawTextLayout (const AttributedString& text, const int x, const int y, const int width, const int height, const bool multipleLayouts, const CGContextRef& context, const float flipHeight)
     {
         CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString(text);
-
         CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
-
         CFRelease(attribString);
 
         // Initialize a rectangular path.
@@ -156,12 +154,10 @@ public:
         return (int)textHeight;
     }
 
-    void getGlyphLayout (const AttributedString& text, const int x, const int y, const int width, const int height, GlyphLayout& layout)
+    void getGlyphLayout (const AttributedString& text, const int x, const int y, const int width, const int height, GlyphLayout& glyphLayout)
     {
         CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString(text);
-
         CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
-
         CFRelease(attribString);
 
         // Initialize a rectangular path.
@@ -169,22 +165,60 @@ public:
         CGRect bounds = CGRectMake((CGFloat)x, (CGFloat)y, (CGFloat)width, (CGFloat)height);
         CGPathAddRect(path, NULL, bounds);
 
-        // Create the frame and draw it into the graphics context
+        // Create the frame
         CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
         CFRelease(framesetter);
         CGPathRelease(path);
 
         CFArrayRef lines = CTFrameGetLines(frame);
         CFIndex numLines = CFArrayGetCount(lines);
-        CFIndex lastLineIndex = numLines - 1;
-        CGFloat descent;
-        CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, lastLineIndex);
-        CTLineGetTypographicBounds(line, NULL,  &descent, NULL);
-        CGPoint lastLineOrigin;
-        CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
-        CGFloat layoutHeight =  (CGFloat)height - lastLineOrigin.y + descent;
-        // TODO: Fill GlyphLayout class
-
+        // Preallocate GlyphLayout Line Array
+        glyphLayout.setNumLines(numLines);
+        for (CFIndex i = 0; i < numLines; ++i)
+        {
+            CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, i);
+            CFArrayRef runs = CTLineGetGlyphRuns(line);
+            CFIndex numRuns = CFArrayGetCount(runs);
+            CFRange lineStringRange = CTLineGetStringRange(line);
+            CFIndex lineStringEnd = lineStringRange.location + lineStringRange.length - 1;
+            GlyphLine* glyphLine = new GlyphLine((int) numRuns, (int) lineStringRange.location, (int) lineStringEnd);
+            for (CFIndex j = 0; j < numRuns; ++j)
+            {
+                CTRunRef run = (CTRunRef) CFArrayGetValueAtIndex (runs, j);
+                CFIndex numGlyphs = CTRunGetGlyphCount(run);
+                CFRange runStringRange = CTRunGetStringRange(run);
+                CFIndex runStringEnd = runStringRange.location + runStringRange.length - 1;
+                GlyphRun* glyphRun = new GlyphRun((int) numGlyphs, (int) runStringRange.location, (int) runStringEnd);
+                // First we will try to access the metrics without copying data
+                const CGGlyph* glyphsPtr = CTRunGetGlyphsPtr(run);
+                const CGPoint* posPtr = CTRunGetPositionsPtr(run);
+                if (glyphsPtr != nullptr && posPtr != nullptr)
+                {
+                    // We can access the metrics without copying them
+                    for (CFIndex k = 0; k < numGlyphs; ++k)
+                    {
+                        //The glyph positions in a run are relative to the origin of the line containing the run
+                        Glyph* glyph = new Glyph(glyphsPtr[k], (float) posPtr[k].x, (float) posPtr[k].y);
+                        glyphRun->addGlyph(glyph);
+                    }
+                }
+                else
+                {
+                    // One of the metric functions returned null so we must copy the metrics to get them
+                    HeapBlock <CGGlyph> glyphBuffer (numGlyphs);
+                    CTRunGetGlyphs (run, CFRangeMake (0, 0), glyphBuffer);
+                    HeapBlock <CGPoint> positionBuffer (numGlyphs);
+                    CTRunGetPositions (run, CFRangeMake (0, 0), positionBuffer);
+                    for (CFIndex k = 0; k < numGlyphs; ++k)
+                    {
+                        Glyph* glyph = new Glyph(glyphBuffer[k], (float) positionBuffer[k].x, (float) positionBuffer[k].y);
+                        glyphRun->addGlyph(glyph);
+                    }
+                }
+                glyphLine->addGlyphRun(glyphRun);
+            }
+            glyphLayout.addGlyphLine(glyphLine);
+        }
         CFRelease(frame);
     }
 private:
