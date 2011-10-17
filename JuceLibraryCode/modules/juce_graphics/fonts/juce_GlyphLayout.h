@@ -35,6 +35,10 @@ public:
     Glyph(int glyphCode, float lineXOffset, float lineYOffset);
     ~Glyph();
 
+    int getGlyphCode() const;
+    float getLineXOffset() const;
+    float getLineYOffset() const;
+
 private:
     int glyphCode;
     float lineXOffset;
@@ -48,8 +52,7 @@ public:
     GlyphRun(int numGlyphs, int stringStart, int stringEnd);
     ~GlyphRun();
 
-    int getNumLines() const noexcept                           { return glyphs.size(); }
-
+    int getNumGlyphs() const;
     Glyph& getGlyph (int index) const;
 
     void addGlyph (Glyph* glyph);
@@ -67,8 +70,7 @@ public:
     GlyphLine(int numRuns, int stringStart, int stringEnd, float ascent, float descent, float leading);
     ~GlyphLine();
 
-    int getNumRuns() const noexcept                           { return runs.size(); }
-
+    int getNumRuns() const;
     GlyphRun& getGlyphRun (int index) const;
 
     void addGlyphRun (GlyphRun* glyphRun);
@@ -89,7 +91,7 @@ public:
     GlyphLayout();
     ~GlyphLayout();
 
-    int getNumLines() const noexcept                           { return lines.size(); }
+    int getNumLines() const;
     GlyphLine& getGlyphLine (int index) const;
     int getHeight () const;
 

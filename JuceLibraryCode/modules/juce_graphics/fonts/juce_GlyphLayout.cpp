@@ -29,7 +29,24 @@ Glyph::Glyph (int glyphCode_, float lineXOffset_, float lineYOffset_) : glyphCod
 {
 }
 
-Glyph::~Glyph() {}
+Glyph::~Glyph()
+{
+}
+
+int Glyph::getGlyphCode() const
+{
+    return glyphCode;
+}
+
+float Glyph::getLineXOffset() const
+{
+    return lineXOffset;
+}
+
+float Glyph::getLineYOffset() const
+{
+    return lineYOffset;
+}
 
 //==============================================================================
 
@@ -38,8 +55,14 @@ GlyphRun::GlyphRun (int numGlyphs, int stringStart, int stringEnd) : stringRange
     glyphs.ensureStorageAllocated (numGlyphs);
 }
 
-GlyphRun::~GlyphRun() {}
+GlyphRun::~GlyphRun()
+{
+}
 
+int GlyphRun::getNumGlyphs() const
+{
+    return glyphs.size();
+}
 
 Glyph& GlyphRun::getGlyph (int index) const
 {
@@ -62,8 +85,14 @@ GlyphLine::GlyphLine (int numRuns, int stringStart, int stringEnd, float ascent_
     runs.ensureStorageAllocated (numRuns);
 }
 
-GlyphLine::~GlyphLine() {}
+GlyphLine::~GlyphLine()
+{
+}
 
+int GlyphLine::getNumRuns() const
+{
+    return runs.size();
+}
 
 GlyphRun& GlyphLine::getGlyphRun (int index) const
 {
@@ -83,8 +112,14 @@ GlyphLayout::GlyphLayout ()
 {
 }
 
-GlyphLayout::~GlyphLayout() {}
+GlyphLayout::~GlyphLayout()
+{
+}
 
+int GlyphLayout::getNumLines() const
+{
+    return lines.size();
+}
 
 GlyphLine& GlyphLayout::getGlyphLine (int index) const
 {
