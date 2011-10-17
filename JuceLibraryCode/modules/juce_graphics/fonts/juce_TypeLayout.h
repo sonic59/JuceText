@@ -38,6 +38,8 @@ public:
 
     virtual void getGlyphLayout (const AttributedString& text, const int x, const int y, const int width, const int height, GlyphLayout& glyphLayout) = 0;
 
+    virtual void draw (const Graphics& g, const GlyphLayout& glyphLayout) = 0;
+
 protected:
     TypeLayout();
 private:

@@ -226,6 +226,11 @@ public:
         }
         CFRelease(frame);
     }
+
+    void draw (const Graphics& g, const GlyphLayout& glyphLayout)
+    {
+
+    }
 private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CoreTextTypeLayout);
 };

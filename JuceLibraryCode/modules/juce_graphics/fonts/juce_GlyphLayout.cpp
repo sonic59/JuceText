@@ -116,6 +116,8 @@ void GlyphLayout::addGlyphLine (GlyphLine* glyphLine)
 
 void GlyphLayout::draw (const Graphics& g) const
 {
+    TypeLayout::Ptr typeLayout = TypeLayout::createSystemTypeLayout();
+    typeLayout->draw (g, *this);
 }
 
 END_JUCE_NAMESPACE
