@@ -70,6 +70,11 @@ GlyphRun& GlyphLine::getGlyphRun (int index) const
     return *runs [index];
 }
 
+void GlyphLine::addGlyphRun (GlyphRun* glyphRun)
+{
+    runs.add(glyphRun);
+}
+
 //==============================================================================
 
 GlyphLayout::GlyphLayout ()
@@ -100,6 +105,11 @@ void GlyphLayout::setText (const AttributedString& text, const int x, const int 
 {
     TypeLayout::Ptr typeLayout = TypeLayout::createSystemTypeLayout();
     typeLayout->getGlyphLayout (text, x, y, width, height, *this);
+}
+
+void GlyphLayout::addGlyphLine (GlyphLine* glyphLine)
+{
+    lines.add(glyphLine);
 }
 
 void GlyphLayout::draw (const Graphics& g) const

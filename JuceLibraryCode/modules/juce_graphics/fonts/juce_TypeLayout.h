@@ -36,7 +36,7 @@ public:
 
     virtual ~TypeLayout();
 
-    virtual void getGlyphLayout (const AttributedString& text, const int x, const int y, const int width, const int height, GlyphLayout& layout) = 0;
+    virtual void getGlyphLayout (const AttributedString& text, const int x, const int y, const int width, const int height, GlyphLayout& glyphLayout) = 0;
 
 protected:
     TypeLayout();

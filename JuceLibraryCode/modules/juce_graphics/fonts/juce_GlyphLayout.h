@@ -71,6 +71,8 @@ public:
 
     GlyphRun& getGlyphRun (int index) const;
 
+    void addGlyphRun (GlyphRun* glyphRun);
+
 private:
     OwnedArray <GlyphRun> runs;
     Range<int> stringRange;
@@ -90,6 +92,8 @@ public:
 
     void setNumLines(int value);
     void setText (const AttributedString& text, const int x, const int y, const int width, const int height);
+
+    void addGlyphLine (GlyphLine* glyphLine);
 
     void draw (const Graphics& g) const;
 
