@@ -53,13 +53,20 @@ public:
     ~GlyphRun();
 
     int getNumGlyphs() const;
+    const Font& getFont() const;
+    const Colour& getColour() const;
     Glyph& getGlyph (const int index) const;
+
+    void setFont(const Font& newFont);
+    void setColour(const Colour& newColour);
 
     void addGlyph (const Glyph* glyph);
 
 private:
     OwnedArray <Glyph> glyphs;
     Range<int> stringRange;
+    Font font;
+    Colour colour;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphRun);
 };

@@ -50,7 +50,7 @@ float Glyph::getLineYOffset() const
 
 //==============================================================================
 
-GlyphRun::GlyphRun (const int numGlyphs, const int stringStart, const int stringEnd) : stringRange(stringStart, stringEnd)
+GlyphRun::GlyphRun (const int numGlyphs, const int stringStart, const int stringEnd) : stringRange(stringStart, stringEnd), colour(Colours::black)
 {
     glyphs.ensureStorageAllocated (numGlyphs);
 }
@@ -64,11 +64,31 @@ int GlyphRun::getNumGlyphs() const
     return glyphs.size();
 }
 
+const Font& GlyphRun::getFont() const
+{
+    return font;
+}
+
+const Colour& GlyphRun::getColour() const
+{
+    return colour;
+}
+
 Glyph& GlyphRun::getGlyph (const int index) const
 {
     jassert (isPositiveAndBelow (index, glyphs.size()));
 
     return *glyphs [index];
+}
+
+void GlyphRun::setFont(const Font& newFont)
+{
+    font = newFont;
+}
+
+void GlyphRun::setColour(const Colour& newColour)
+{
+    colour = newColour;
 }
 
 void GlyphRun::addGlyph (const Glyph* glyph)
