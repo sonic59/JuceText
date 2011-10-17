@@ -54,7 +54,14 @@ public:
             {
                 AttrFont* attrFont = static_cast<AttrFont*>(attr);
                 CTFontRef ctFontRef;
-                ctFontRef = CTFontCreateWithName (attrFont->font.getTypefaceName().toCFString(), attrFont->font.getHeight(), nullptr);
+                // Apply fontHeightToCGSizeFactor to the font size since this is how glyphs are drawn
+                ctFontRef = CTFontCreateWithName (attrFont->font.getTypefaceName().toCFString(), 1024, nullptr);
+                CGFontRef cgFontRef = CTFontCopyGraphicsFont (ctFontRef, nullptr);
+                CFRelease(ctFontRef);
+                const int totalHeight = abs (CGFontGetAscent (cgFontRef)) + abs (CGFontGetDescent (cgFontRef));
+                float fontHeightToCGSizeFactor = CGFontGetUnitsPerEm (cgFontRef) / (float) totalHeight;
+                CGFontRelease(cgFontRef);
+                ctFontRef = CTFontCreateWithName (attrFont->font.getTypefaceName().toCFString(), attrFont->font.getHeight() * fontHeightToCGSizeFactor, nullptr);
                 CFAttributedStringSetAttribute(attribString, CFRangeMake(attrFont->range.getStart(), attrFont->range.getLength()), kCTFontAttributeName, ctFontRef);
                 CFRelease(ctFontRef);
             }
@@ -196,7 +203,15 @@ public:
                     String fontName;
                     fontName = fontName.fromCFString(cfsFontName);
                     CFRelease(cfsFontName);
-                    Font runFont(fontName, (float) CTFontGetSize(ctRunFont), 0);
+                    // Reverse fontHeightToCGSizeFactor so it doesn't get applied twice
+                    CTFontRef ctFontRef = CTFontCreateWithName (fontName.toCFString(), 1024, nullptr);
+                    CGFontRef cgFontRef = CTFontCopyGraphicsFont (ctFontRef, nullptr);
+                    CFRelease(ctFontRef);
+                    const int totalHeight = abs (CGFontGetAscent (cgFontRef)) + abs (CGFontGetDescent (cgFontRef));
+                    float fontHeightToCGSizeFactor = CGFontGetUnitsPerEm (cgFontRef) / (float) totalHeight;
+                    CGFontRelease(cgFontRef);
+                    float runFontSize = (float) CTFontGetSize(ctRunFont);
+                    Font runFont(fontName, runFontSize/fontHeightToCGSizeFactor, 0);
                     glyphRun->setFont(runFont);
                 }
                 // Add Color Attribute to GlyphRun
