@@ -179,13 +179,21 @@ public:
             CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, i);
             CFArrayRef runs = CTLineGetGlyphRuns(line);
             CFIndex numRuns = CFArrayGetCount(runs);
-            CFRange lineStringRange = CTLineGetStringRange(line);
-            CFIndex lineStringEnd = lineStringRange.location + lineStringRange.length - 1;
+            // Get string range
+            CFRange cfrlineStringRange = CTLineGetStringRange(line);
+            CFIndex lineStringEnd = cfrlineStringRange.location + cfrlineStringRange.length - 1;
+            Range<int> lineStringRange((int) cfrlineStringRange.location, (int) lineStringEnd);
+            // Get line origin
+            CGPoint cgpLineOrigin;
+            CTFrameGetLineOrigins(frame, CFRangeMake(i, 1), &cgpLineOrigin);
+            // CGPoint is in CG Coordinates (Y axis at bottom left)
+            Point<float> lineOrigin((float) cgpLineOrigin.x, glyphLayout.getHeight() - (float) cgpLineOrigin.y);
+            // Get ascent, descent and leading
             CGFloat ascent;
             CGFloat descent;
             CGFloat leading;
             CTLineGetTypographicBounds(line, &ascent,  &descent, &leading);
-            GlyphLine* glyphLine = new GlyphLine((int) numRuns, (int) lineStringRange.location, (int) lineStringEnd,
+            GlyphLine* glyphLine = new GlyphLine((int) numRuns, lineStringRange, lineOrigin,
                                                  (float) ascent, (float) descent, (float) leading);
             for (CFIndex j = 0; j < numRuns; ++j)
             {
@@ -194,6 +202,34 @@ public:
                 CFRange runStringRange = CTRunGetStringRange(run);
                 CFIndex runStringEnd = runStringRange.location + runStringRange.length - 1;
                 GlyphRun* glyphRun = new GlyphRun((int) numGlyphs, (int) runStringRange.location, (int) runStringEnd);
+                // Add Font Attribute to GlyphRun
+                CFDictionaryRef runAttributes = CTRunGetAttributes(run);
+                CTFontRef ctRunFont;
+                bool fontPresent = CFDictionaryGetValueIfPresent(runAttributes, kCTFontAttributeName, (const void **)&ctRunFont);
+                if (fontPresent)
+                {
+                    CFStringRef cfsFontName = CTFontCopyPostScriptName(ctRunFont);
+                    String fontName;
+                    fontName = fontName.fromCFString(cfsFontName);
+                    CFRelease(cfsFontName);
+                    Font runFont(fontName, (float) CTFontGetSize(ctRunFont), 0);
+                    glyphRun->setFont(runFont);
+                }
+                // Add Color Attribute to GlyphRun
+                CGColorRef cgRunColor;
+                bool colourPresent = CFDictionaryGetValueIfPresent(runAttributes, kCTForegroundColorAttributeName, (const void **)&cgRunColor);
+                if (colourPresent)
+                {
+                    const CGFloat* components = CGColorGetComponents(cgRunColor);
+                    const int numComponents = CGColorGetNumberOfComponents(cgRunColor);
+                    // RGBA
+                    if (numComponents == 4)
+                    {
+                        Colour runColour((uint8) (components[0] * 255), (uint8) (components[1] * 255), (uint8) (components[2] * 255), (float) components[3]);
+                        glyphRun->setColour(runColour);
+                    }
+                }
+                // Add Individual Glyph Data
                 // First we will try to access the metrics without copying data
                 const CGGlyph* glyphsPtr = CTRunGetGlyphsPtr(run);
                 const CGPoint* posPtr = CTRunGetPositionsPtr(run);

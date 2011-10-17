@@ -98,9 +98,10 @@ void GlyphRun::addGlyph (const Glyph* glyph)
 
 //==============================================================================
 
-GlyphLine::GlyphLine (const int numRuns, const int stringStart, const int stringEnd,
-                      const float ascent_, const float descent_, const float leading_) : stringRange(stringStart, stringEnd),
-                      ascent(ascent_), descent(descent_), leading(leading_)
+GlyphLine::GlyphLine (const int numRuns, const Range<int> stringRange_,
+                      const Point<float> lineOrigin_, const float ascent_,
+                      const float descent_, const float leading_) : stringRange(stringRange_),
+                      lineOrigin(lineOrigin_), ascent(ascent_), descent(descent_), leading(leading_)
 {
     runs.ensureStorageAllocated (numRuns);
 }
@@ -112,6 +113,11 @@ GlyphLine::~GlyphLine()
 int GlyphLine::getNumRuns() const
 {
     return runs.size();
+}
+
+const Point<float>& GlyphLine::getLineOrigin() const
+{
+    return lineOrigin;
 }
 
 float GlyphLine::getAscent() const
@@ -187,14 +193,9 @@ GlyphLine& GlyphLayout::getGlyphLine (const int index) const
 float GlyphLayout::getTextHeight() const
 {
     float height = 0.0f;
-    float lastLeading = 0.0f;
-    for (int i = 0; i < getNumLines(); ++i)
-    {
-        GlyphLine& glyphLine = getGlyphLine(i);
-        height += glyphLine.getAscent() + glyphLine.getDescent() + glyphLine.getLeading();
-        lastLeading = glyphLine.getLeading();
-    }
-    height -= lastLeading;
+    GlyphLine& glyphLine = getGlyphLine(getNumLines() - 1);
+    Point<float> lastLineOrigin = glyphLine.getLineOrigin();
+    height = lastLineOrigin.getY() + glyphLine.getDescent();
     return height;
 }
 
@@ -217,22 +218,23 @@ void GlyphLayout::addGlyphLine (const GlyphLine* glyphLine)
 void GlyphLayout::draw (const Graphics& g) const
 {
     LowLevelGraphicsContext* const context = g.getInternalContext();
-    float xOffset = getX();
-    float currentLineOffset = getY();
     for (int i = 0; i < getNumLines(); ++i)
     {
         GlyphLine& glyphLine = getGlyphLine(i);
-        currentLineOffset += glyphLine.getAscent();
+        Point<float> lineOrigin = glyphLine.getLineOrigin();
         for (int j = 0; j < glyphLine.getNumRuns(); ++j)
         {
             GlyphRun& glyphRun = glyphLine.getGlyphRun(j);
+            context->setFont (glyphRun.getFont());
+            context->setFill (glyphRun.getColour());
             for (int k = 0; k < glyphRun.getNumGlyphs(); ++k)
             {
                 Glyph& glyph = glyphRun.getGlyph(k);
-                context->drawGlyph (glyph.getGlyphCode(), AffineTransform::translation (xOffset + glyph.getLineXOffset(), currentLineOffset + glyph.getLineYOffset()));
+                context->drawGlyph (glyph.getGlyphCode(),
+                                    AffineTransform::translation (getX() + lineOrigin.getX() + glyph.getLineXOffset(),
+                                                                  getY() + lineOrigin.getY() + glyph.getLineYOffset()));
             }
         }
-        currentLineOffset += glyphLine.getDescent() + glyphLine.getLeading();
     }
 }
 

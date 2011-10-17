@@ -74,11 +74,12 @@ private:
 class JUCE_API  GlyphLine
 {
 public:
-    GlyphLine(const int numRuns, const int stringStart, const int stringEnd,
+    GlyphLine(const int numRuns, const Range<int> stringRange, const Point<float> lineOrigin,
               const float ascent, const float descent, const float leading);
     ~GlyphLine();
 
     int getNumRuns() const;
+    const Point<float>& getLineOrigin() const;
     float getAscent() const;
     float getDescent() const;
     float getLeading() const;
@@ -89,6 +90,7 @@ public:
 private:
     OwnedArray <GlyphRun> runs;
     Range<int> stringRange;
+    Point<float> lineOrigin;
     float ascent;
     float descent;
     float leading;
