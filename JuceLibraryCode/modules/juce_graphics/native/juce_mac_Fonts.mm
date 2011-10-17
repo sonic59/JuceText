@@ -50,29 +50,13 @@ public:
             // Character Range Error Checking
             if (attr->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
             if (attr->range.getEnd() > CFAttributedStringGetLength(attribString)) attr->range.setEnd(CFAttributedStringGetLength(attribString));
-            if (attr->attribute == Attr::fontFamily)
+            if (attr->attribute == Attr::font)
             {
-                // Core Text requires the font family and font size to be set together
-                // We must find the matching font size attribute first
-                for (int j = 0; j < numCharacterAttributes; ++j)
-                {
-                    Attr* attr2 = text.getCharAttribute(j);
-                    // Ignore all other attributes except for font size
-                    if (attr2->attribute != Attr::fontSize) continue;
-                    // Character Range Error Checking
-                    if (attr2->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
-                    if (attr2->range.getEnd() > CFAttributedStringGetLength(attribString)) attr2->range.setEnd(CFAttributedStringGetLength(attribString));
-                    // Make sure that the ranges for font family and font size match
-                    if (attr->range.getStart() != attr2->range.getStart() || attr->range.getEnd() != attr2->range.getEnd()) continue;
-                    AttrString* attrString = static_cast<AttrString*>(attr);
-                    AttrFloat* attrFloat = static_cast<AttrFloat*>(attr2);
-                    CTFontRef ctFontRef;
-                    ctFontRef = CTFontCreateWithName (attrString->text.toCFString(), attrFloat->value, nullptr);
-                    CFAttributedStringSetAttribute(attribString, CFRangeMake(attrString->range.getStart(), attrString->range.getLength()), kCTFontAttributeName, ctFontRef);
-                    CFRelease(ctFontRef);
-                    // We have found the matching size, no need to keep checking
-                    break;
-                }
+                AttrFont* attrFont = static_cast<AttrFont*>(attr);
+                CTFontRef ctFontRef;
+                ctFontRef = CTFontCreateWithName (attrFont->font.getTypefaceName().toCFString(), attrFont->font.getHeight(), nullptr);
+                CFAttributedStringSetAttribute(attribString, CFRangeMake(attrFont->range.getStart(), attrFont->range.getLength()), kCTFontAttributeName, ctFontRef);
+                CFRelease(ctFontRef);
             }
             if (attr->attribute == Attr::foregroundColour)
             {

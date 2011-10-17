@@ -34,8 +34,7 @@ public:
     enum Attribute
     {
         foregroundColour,
-        fontFamily,
-        fontSize,
+        font,
         fontStretch,
         fontStyle,
         fontWeight,
@@ -51,6 +50,12 @@ class JUCE_API  AttrColour : public Attr
 {
 public:
     Colour colour;
+};
+
+class JUCE_API  AttrFont : public Attr
+{
+public:
+    Font font;
 };
 
 class JUCE_API  AttrString : public Attr
@@ -115,8 +120,7 @@ public:
     Attr* getCharAttribute(const int index) const;
 
     void setForegroundColour(int start, int end, const Colour& colour);
-    void setFontFamily(int start, int end, const String& family);
-    void setFontSize(int start, int end, const float& size);
+    void setFont(int start, int end, const Font& font);
 
 private:
     String text;

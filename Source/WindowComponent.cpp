@@ -361,13 +361,13 @@ void WindowComponent::readXMLLayout(String xmlFile, Label* labelOne, LayoutLabel
                 // Test Colored Text
                 //as1->setForegroundColour(3, 5, Colours::blue);
                 // Test Single Font
-                as1->setFontFamily(0, e->getAllSubText().length(), "Lucidia Grande");
-                as1->setFontSize(0, e->getAllSubText().length(), 13.0f);
+                Font lucidiaGrande("Lucidia Grande", 13.0f, 0);
+                as1->setFont(0, e->getAllSubText().length(), lucidiaGrande);
                 // Test Multiple Fonts
-                /*as1->setFontFamily(0, 5, "Lucidia Grande");
-                as1->setFontSize(0, 5, 13.0f);
-                as1->setFontFamily(6, e->getAllSubText().length(), "Times");
-                as1->setFontSize(6, e->getAllSubText().length(), 13.0f);*/
+                /*Font lucidiaGrande("Lucidia Grande", 13.0f, 0);
+                as1->setFont(0, 5, lucidiaGrande);
+                Font times("Times", 13.0f, 0);
+                as1->setFont(6, e->getAllSubText().length(), times);*/
                 // Test Paragraph Alignment
                 //as1->setTextAlignment(AttributedString::center);
                 labelOne->setText (e->getAllSubText(), false);
@@ -414,13 +414,12 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
                     p2 = e->getAllSubText();
                     labelOne->setText (p1 + "\n\n" + p2, false);
                     as1->setForegroundColour(100, 200, Colours::blue);
-                    as1->setFontFamily(0, 300, "Times");
-                    as1->setFontSize(0, 300, 11.0f);
-                    as1->setFontFamily(301, e->getAllSubText().length(), "Lucidia Grande");
-                    as1->setFontSize(301, e->getAllSubText().length(), 12.0f);
+                    Font times("Times", 11.0f, 0);
+                    as1->setFont(0, 300, times);
+                    Font lucidiaGrande("Lucidia Grande", 12.0f, 0);
+                    as1->setFont(301, e->getAllSubText().length(), lucidiaGrande);
                     as2->setText(e->getAllSubText());
-                    as2->setFontFamily(0, e->getAllSubText().length(), "Lucidia Grande");
-                    as2->setFontSize(0, e->getAllSubText().length(), 12.0f);
+                    as2->setFont(0, e->getAllSubText().length(), lucidiaGrande);
                     as2->setTextAlignment(AttributedString::right);
                     ScopedPointer<OwnedArray<AttributedString> > asa;
                     asa = new OwnedArray<AttributedString>();

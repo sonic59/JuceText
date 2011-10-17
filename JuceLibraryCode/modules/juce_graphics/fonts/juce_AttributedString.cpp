@@ -99,25 +99,14 @@ void AttributedString::setForegroundColour(int start, int end, const Colour& col
     charAttributes.add(attr);
 }
 
-void AttributedString::setFontFamily(int start, int end, const String& family)
+void AttributedString::setFont(int start, int end, const Font& font)
 {
     Range<int> range(start, end);
-    AttrString* attrString = new AttrString();
-    attrString->attribute = Attr::fontFamily;
-    attrString->range = range;
-    attrString->text = family;
-    Attr* attr = attrString;
-    charAttributes.add(attr);
-}
-
-void AttributedString::setFontSize(int start, int end, const float& size)
-{
-    Range<int> range(start, end);
-    AttrFloat* attrFloat = new AttrFloat();
-    attrFloat->attribute = Attr::fontSize;
-    attrFloat->range = range;
-    attrFloat->value = size;
-    Attr* attr = attrFloat;
+    AttrFont* attrFont = new AttrFont();
+    attrFont->attribute = Attr::font;
+    attrFont->range = range;
+    attrFont->font = font;
+    Attr* attr = attrFont;
     charAttributes.add(attr);
 }
 
