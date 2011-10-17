@@ -322,8 +322,8 @@ void Graphics::drawTextLayout (const AttributedString& text,
             return;
         }
         // Draw was not successful, we need to draw the layout glyph by glyph
-        GlyphLayout layout;
-        layout.setText (text, x, y, width, height);
+        GlyphLayout layout(x, y, width, height);
+        layout.setText (text);
         layout.draw (*this);
     }
 }
@@ -355,10 +355,10 @@ void Graphics::drawTextFrame (const OwnedArray<AttributedString>& text,
             return;
         }
         // Draw was not successful, we need to draw the layout glyph by glyph
-        GlyphLayout layout;
-        layout.setText (*text[0], x, y, width, height);
+        GlyphLayout layout(x, y, width, height);
+        layout.setText (*text[0]);
         layout.draw (*this);
-        actualHeight = layout.getHeight();
+        actualHeight = layout.getTextHeight();
         // Draw each following paragraph in the remaining space
         int availableHeight = height;
         for (int i = 1; i < text.size(); ++i)
@@ -370,10 +370,10 @@ void Graphics::drawTextFrame (const OwnedArray<AttributedString>& text,
             }
             availableHeight -= actualHeight;
             if (availableHeight <= 0) break;
-            GlyphLayout layout2;
-            layout2.setText (*text[i], x, y + height - availableHeight, width, availableHeight);
+            GlyphLayout layout2(x, y + height - availableHeight, width, availableHeight);
+            layout2.setText (*text[i]);
             layout2.draw (*this);
-            actualHeight = layout2.getHeight();
+            actualHeight = layout2.getTextHeight();
         }
     }
 }
