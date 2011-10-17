@@ -32,11 +32,13 @@
 class JUCE_API  Glyph
 {
 public:
-    Glyph();
+    Glyph(int glyphCode, float lineXOffset, float lineYOffset);
     ~Glyph();
 
 private:
-
+    int glyphCode;
+    float lineXOffset;
+    float lineYOffset;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Glyph);
 };
 
@@ -49,6 +51,8 @@ public:
     int getNumLines() const noexcept                           { return glyphs.size(); }
 
     Glyph& getGlyph (int index) const;
+
+    void addGlyph (Glyph* glyph);
 
 private:
     OwnedArray <Glyph> glyphs;

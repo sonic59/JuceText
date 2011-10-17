@@ -25,11 +25,13 @@
 
 BEGIN_JUCE_NAMESPACE
 
-Glyph::Glyph ()
+Glyph::Glyph (int glyphCode_, float lineXOffset_, float lineYOffset_) : glyphCode(glyphCode_), lineXOffset(lineXOffset_), lineYOffset(lineYOffset_)
 {
 }
 
 Glyph::~Glyph() {}
+
+//==============================================================================
 
 GlyphRun::GlyphRun (int numGlyphs, int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
 {
@@ -46,6 +48,12 @@ Glyph& GlyphRun::getGlyph (int index) const
     return *glyphs [index];
 }
 
+void GlyphRun::addGlyph (Glyph* glyph)
+{
+    glyphs.add(glyph);
+}
+
+//==============================================================================
 
 GlyphLine::GlyphLine (int numRuns, int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
 {
@@ -62,6 +70,7 @@ GlyphRun& GlyphLine::getGlyphRun (int index) const
     return *runs [index];
 }
 
+//==============================================================================
 
 GlyphLayout::GlyphLayout ()
 {
