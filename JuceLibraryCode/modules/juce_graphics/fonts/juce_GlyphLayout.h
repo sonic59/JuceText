@@ -32,7 +32,7 @@
 class JUCE_API  Glyph
 {
 public:
-    Glyph(int glyphCode, float lineXOffset, float lineYOffset);
+    Glyph(const int glyphCode, const float lineXOffset, const float lineYOffset);
     ~Glyph();
 
     int getGlyphCode() const;
@@ -49,13 +49,13 @@ private:
 class JUCE_API  GlyphRun
 {
 public:
-    GlyphRun(int numGlyphs, int stringStart, int stringEnd);
+    GlyphRun(const int numGlyphs, const int stringStart, const int stringEnd);
     ~GlyphRun();
 
     int getNumGlyphs() const;
-    Glyph& getGlyph (int index) const;
+    Glyph& getGlyph (const int index) const;
 
-    void addGlyph (Glyph* glyph);
+    void addGlyph (const Glyph* glyph);
 
 private:
     OwnedArray <Glyph> glyphs;
@@ -67,16 +67,17 @@ private:
 class JUCE_API  GlyphLine
 {
 public:
-    GlyphLine(int numRuns, int stringStart, int stringEnd, float ascent, float descent, float leading);
+    GlyphLine(const int numRuns, const int stringStart, const int stringEnd,
+              const float ascent, const float descent, const float leading);
     ~GlyphLine();
 
     int getNumRuns() const;
     float getAscent() const;
     float getDescent() const;
     float getLeading() const;
-    GlyphRun& getGlyphRun (int index) const;
+    GlyphRun& getGlyphRun (const int index) const;
 
-    void addGlyphRun (GlyphRun* glyphRun);
+    void addGlyphRun (const GlyphRun* glyphRun);
 
 private:
     OwnedArray <GlyphRun> runs;
@@ -91,22 +92,30 @@ private:
 class JUCE_API  GlyphLayout
 {
 public:
-    GlyphLayout();
+    GlyphLayout(const float x, const float y, const float width, const float height);
     ~GlyphLayout();
 
     int getNumLines() const;
-    GlyphLine& getGlyphLine (int index) const;
-    int getHeight () const;
+    float getX() const;
+    float getY() const;
+    float getWidth() const;
+    float getHeight() const;
+    GlyphLine& getGlyphLine (const int index) const;
+    float getTextHeight () const;
 
-    void setNumLines(int value);
-    void setText (const AttributedString& text, const int x, const int y, const int width, const int height);
+    void setNumLines(const int value);
+    void setText (const AttributedString& text);
 
-    void addGlyphLine (GlyphLine* glyphLine);
+    void addGlyphLine (const GlyphLine* glyphLine);
 
     void draw (const Graphics& g) const;
 
 private:
     OwnedArray <GlyphLine> lines;
+    float x;
+    float y;
+    float width;
+    float height;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlyphLayout);
 };

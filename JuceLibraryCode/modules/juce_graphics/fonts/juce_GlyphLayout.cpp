@@ -25,7 +25,7 @@
 
 BEGIN_JUCE_NAMESPACE
 
-Glyph::Glyph (int glyphCode_, float lineXOffset_, float lineYOffset_) : glyphCode(glyphCode_), lineXOffset(lineXOffset_), lineYOffset(lineYOffset_)
+Glyph::Glyph (const int glyphCode_, const float lineXOffset_, const float lineYOffset_) : glyphCode(glyphCode_), lineXOffset(lineXOffset_), lineYOffset(lineYOffset_)
 {
 }
 
@@ -50,7 +50,7 @@ float Glyph::getLineYOffset() const
 
 //==============================================================================
 
-GlyphRun::GlyphRun (int numGlyphs, int stringStart, int stringEnd) : stringRange(stringStart, stringEnd)
+GlyphRun::GlyphRun (const int numGlyphs, const int stringStart, const int stringEnd) : stringRange(stringStart, stringEnd)
 {
     glyphs.ensureStorageAllocated (numGlyphs);
 }
@@ -64,22 +64,22 @@ int GlyphRun::getNumGlyphs() const
     return glyphs.size();
 }
 
-Glyph& GlyphRun::getGlyph (int index) const
+Glyph& GlyphRun::getGlyph (const int index) const
 {
     jassert (isPositiveAndBelow (index, glyphs.size()));
 
     return *glyphs [index];
 }
 
-void GlyphRun::addGlyph (Glyph* glyph)
+void GlyphRun::addGlyph (const Glyph* glyph)
 {
     glyphs.add(glyph);
 }
 
 //==============================================================================
 
-GlyphLine::GlyphLine (int numRuns, int stringStart, int stringEnd, float ascent_,
-                      float descent_, float leading_) : stringRange(stringStart, stringEnd),
+GlyphLine::GlyphLine (const int numRuns, const int stringStart, const int stringEnd,
+                      const float ascent_, const float descent_, const float leading_) : stringRange(stringStart, stringEnd),
                       ascent(ascent_), descent(descent_), leading(leading_)
 {
     runs.ensureStorageAllocated (numRuns);
@@ -109,21 +109,22 @@ float GlyphLine::getLeading() const
     return leading;
 }
 
-GlyphRun& GlyphLine::getGlyphRun (int index) const
+GlyphRun& GlyphLine::getGlyphRun (const int index) const
 {
     jassert (isPositiveAndBelow (index, runs.size()));
 
     return *runs [index];
 }
 
-void GlyphLine::addGlyphRun (GlyphRun* glyphRun)
+void GlyphLine::addGlyphRun (const GlyphRun* glyphRun)
 {
     runs.add(glyphRun);
 }
 
 //==============================================================================
 
-GlyphLayout::GlyphLayout ()
+GlyphLayout::GlyphLayout (const float x_, const float y_, const float width_,
+                          const float height_) : x(x_), y(y_), width(width_), height(height_)
 {
 }
 
@@ -136,30 +137,59 @@ int GlyphLayout::getNumLines() const
     return lines.size();
 }
 
-GlyphLine& GlyphLayout::getGlyphLine (int index) const
+float GlyphLayout::getX() const
+{
+    return x;
+}
+
+float GlyphLayout::getY() const
+{
+    return y;
+}
+
+float GlyphLayout::getWidth() const
+{
+    return width;
+}
+
+float GlyphLayout::getHeight() const
+{
+    return height;
+}
+
+GlyphLine& GlyphLayout::getGlyphLine (const int index) const
 {
     jassert (isPositiveAndBelow (index, lines.size()));
 
     return *lines [index];
 }
 
-int GlyphLayout::getHeight() const
+float GlyphLayout::getTextHeight() const
 {
-    return 1;
+    float height = 0.0f;
+    float lastLeading = 0.0f;
+    for (int i = 0; i < getNumLines(); ++i)
+    {
+        GlyphLine& glyphLine = getGlyphLine(i);
+        height += glyphLine.getAscent() + glyphLine.getDescent() + glyphLine.getLeading();
+        lastLeading = glyphLine.getLeading();
+    }
+    height -= lastLeading;
+    return height;
 }
 
-void GlyphLayout::setNumLines(int value)
+void GlyphLayout::setNumLines(const int value)
 {
     lines.ensureStorageAllocated (value);
 }
 
-void GlyphLayout::setText (const AttributedString& text, const int x, const int y, const int width, const int height)
+void GlyphLayout::setText (const AttributedString& text)
 {
     TypeLayout::Ptr typeLayout = TypeLayout::createSystemTypeLayout();
-    typeLayout->getGlyphLayout (text, x, y, width, height, *this);
+    typeLayout->getGlyphLayout (text, *this);
 }
 
-void GlyphLayout::addGlyphLine (GlyphLine* glyphLine)
+void GlyphLayout::addGlyphLine (const GlyphLine* glyphLine)
 {
     lines.add(glyphLine);
 }

@@ -154,7 +154,7 @@ public:
         return (int)textHeight;
     }
 
-    void getGlyphLayout (const AttributedString& text, const int x, const int y, const int width, const int height, GlyphLayout& glyphLayout)
+    void getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout)
     {
         CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString(text);
         CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
@@ -162,7 +162,7 @@ public:
 
         // Initialize a rectangular path.
         CGMutablePathRef path = CGPathCreateMutable();
-        CGRect bounds = CGRectMake((CGFloat)x, (CGFloat)y, (CGFloat)width, (CGFloat)height);
+        CGRect bounds = CGRectMake(glyphLayout.getX(), glyphLayout.getY(), glyphLayout.getWidth(), glyphLayout.getHeight());
         CGPathAddRect(path, NULL, bounds);
 
         // Create the frame
@@ -229,8 +229,26 @@ public:
 
     void draw (const Graphics& g, const GlyphLayout& glyphLayout)
     {
-
+        LowLevelGraphicsContext* const context = g.getInternalContext();
+        float xOffset = glyphLayout.getX();
+        float currentLineOffset = glyphLayout.getY();
+        for (int i = 0; i < glyphLayout.getNumLines(); ++i)
+        {
+            GlyphLine& glyphLine = glyphLayout.getGlyphLine(i);
+            currentLineOffset += glyphLine.getAscent();
+            for (int j = 0; j < glyphLine.getNumRuns(); ++j)
+            {
+                GlyphRun& glyphRun = glyphLine.getGlyphRun(j);
+                for (int k = 0; k < glyphRun.getNumGlyphs(); ++k)
+                {
+                    Glyph& glyph = glyphRun.getGlyph(k);
+                    context->drawGlyph (glyph.getGlyphCode(), AffineTransform::translation (xOffset + glyph.getLineXOffset(), currentLineOffset + glyph.getLineYOffset()));
+                }
+            }
+            currentLineOffset += glyphLine.getDescent() + glyphLine.getLeading();
+        }
     }
+
 private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CoreTextTypeLayout);
 };
