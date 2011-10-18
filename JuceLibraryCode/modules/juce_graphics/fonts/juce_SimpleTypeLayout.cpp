@@ -100,7 +100,8 @@ void SimpleTypeLayout::clear()
 
 void SimpleTypeLayout::appendText (const AttributedString& text, Range<int> stringRange, const Font& font)
 {
-    String::CharPointerType t (text.getText().substring(stringRange.getStart(), stringRange.getEnd()).getCharPointer());
+    String stringText = text.getText().substring(stringRange.getStart(), stringRange.getEnd());
+    String::CharPointerType t (stringText.getCharPointer());
     String currentString;
     int lastCharType = 0;
 
@@ -303,6 +304,7 @@ int SimpleTypeLayout::getNumLines() const
 
 void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout)
 {
+    // Assume that font attributes are present for entire string range
     // Assume that the font attribute list doesn't have overlapping ranges
     // Take the font attribute list and plug it into appendText
     clear();
