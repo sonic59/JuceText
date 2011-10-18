@@ -406,6 +406,11 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
                 {
                     p1 = e->getAllSubText();
                     as1->setText(e->getAllSubText());
+                    as1->setForegroundColour(100, 200, Colours::blue);
+                    Font times("Times", 14.0f, 0);
+                    as1->setFont(0, 300, times);
+                    Font lucidiaGrande("Lucidia Grande", 15.0f, 0);
+                    as1->setFont(301, e->getAllSubText().length(), lucidiaGrande);
                     counter++;
                     continue;
                 }
@@ -413,12 +418,8 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
                 {
                     p2 = e->getAllSubText();
                     labelOne->setText (p1 + "\n\n" + p2, false);
-                    as1->setForegroundColour(100, 200, Colours::blue);
-                    Font times("Times", 14.0f, 0);
-                    as1->setFont(0, 300, times);
-                    Font lucidiaGrande("Lucidia Grande", 15.0f, 0);
-                    as1->setFont(301, e->getAllSubText().length(), lucidiaGrande);
                     as2->setText(e->getAllSubText());
+                    Font lucidiaGrande("Lucidia Grande", 15.0f, 0);
                     as2->setFont(0, e->getAllSubText().length(), lucidiaGrande);
                     as2->setTextAlignment(AttributedString::right);
                     ScopedPointer<OwnedArray<AttributedString> > asa;
