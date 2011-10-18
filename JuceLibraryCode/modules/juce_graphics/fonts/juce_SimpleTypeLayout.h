@@ -34,9 +34,19 @@ public:
     SimpleTypeLayout();
     ~SimpleTypeLayout();
 
+    void clear();
+    void appendText (const AttributedString& text, Range<int> stringRange, const Font& font);
+    void layout (int maxWidth, const Justification& justification, const bool attemptToBalanceLineLengths);
+    int getLineWidth (const int lineNumber) const;
+    int getWidth() const;
+    int getNumLines() const;
     void getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout);
 
 private:
+    class Token;
+    friend class OwnedArray <Token>;
+    OwnedArray <Token> tokens;
+    int totalLines;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleTypeLayout);
 };
 
