@@ -408,7 +408,7 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
                     as1->setText(e->getAllSubText());
                     as1->setForegroundColour(100, 200, Colours::blue);
                     Font times("Times", 14.0f, 0);
-                    as1->setFont(0, 300, times);
+                    as1->setFont(0, 301, times);
                     Font lucidiaGrande("Lucidia Grande", 15.0f, 0);
                     as1->setFont(301, e->getAllSubText().length(), lucidiaGrande);
                     counter++;
