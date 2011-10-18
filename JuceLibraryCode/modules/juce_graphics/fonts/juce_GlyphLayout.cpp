@@ -193,6 +193,7 @@ GlyphLine& GlyphLayout::getGlyphLine (const int index) const
 float GlyphLayout::getTextHeight() const
 {
     float height = 0.0f;
+    if (getNumLines() == 0) return height;
     GlyphLine& glyphLine = getGlyphLine(getNumLines() - 1);
     Point<float> lastLineOrigin = glyphLine.getLineOrigin();
     height = lastLineOrigin.getY() + glyphLine.getDescent();
