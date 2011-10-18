@@ -165,6 +165,8 @@
 		35C6E5684FB412CC0B93D03B /* juce_ScopedReadLock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_ScopedReadLock.h; path = ../../JuceLibraryCode/modules/juce_core/threads/juce_ScopedReadLock.h; sourceTree = SOURCE_ROOT; };
 		35EDA11D5FB670E85DB118A9 /* juce_TextPropertyComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_TextPropertyComponent.cpp; path = ../../JuceLibraryCode/modules/juce_gui_basics/properties/juce_TextPropertyComponent.cpp; sourceTree = SOURCE_ROOT; };
 		362767D2EF8FBCAA86B63F03 /* juce_DirectoryContentsDisplayComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_DirectoryContentsDisplayComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_DirectoryContentsDisplayComponent.h; sourceTree = SOURCE_ROOT; };
+		368B7858144DBC400000806C /* juce_SimpleTypeLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_SimpleTypeLayout.cpp; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_SimpleTypeLayout.cpp; sourceTree = "<group>"; };
+		368B7859144DBC400000806C /* juce_SimpleTypeLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_SimpleTypeLayout.h; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_SimpleTypeLayout.h; sourceTree = "<group>"; };
 		368D90EA143B520C0013E28A /* juce_FrameLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_FrameLabel.cpp; path = ../../JuceLibraryCode/modules/juce_gui_basics/widgets/juce_FrameLabel.cpp; sourceTree = "<group>"; };
 		368D90EB143B520C0013E28A /* juce_FrameLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_FrameLabel.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/widgets/juce_FrameLabel.h; sourceTree = "<group>"; };
 		36901F34144B16A600CDC9EB /* juce_GlyphLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_GlyphLayout.cpp; path = ../../JuceLibraryCode/modules/juce_graphics/fonts/juce_GlyphLayout.cpp; sourceTree = "<group>"; };
@@ -990,6 +992,8 @@
 		4CDCE678A4597F2521D23DA4 /* fonts */ = {
 			isa = PBXGroup;
 			children = (
+				368B7858144DBC400000806C /* juce_SimpleTypeLayout.cpp */,
+				368B7859144DBC400000806C /* juce_SimpleTypeLayout.h */,
 				36901F39144B64EA00CDC9EB /* juce_TypeLayout.cpp */,
 				36901F38144B5F8400CDC9EB /* juce_TypeLayout.h */,
 				36901F34144B16A600CDC9EB /* juce_GlyphLayout.cpp */,

@@ -83,6 +83,7 @@
 #include "fonts/juce_Font.cpp"
 #include "fonts/juce_GlyphArrangement.cpp"
 #include "fonts/juce_GlyphLayout.cpp"
+#include "fonts/juce_SimpleTypeLayout.cpp"
 #include "fonts/juce_TextLayout.cpp"
 #include "fonts/juce_Typeface.cpp"
 #include "fonts/juce_TypeLayout.cpp"
