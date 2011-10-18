@@ -266,11 +266,6 @@ private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CoreTextTypeLayout);
 };
 
-TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
-{
-    return new CoreTextTypeLayout();
-}
-
 //==============================================================================
 class OSXTypeface  : public Typeface
 {
@@ -961,6 +956,11 @@ private:
 #endif
 
 //==============================================================================
+TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
+{
+    return new CoreTextTypeLayout();
+}
+
 Typeface::Ptr Typeface::createSystemTypefaceFor (const Font& font)
 {
     return new OSXTypeface (font);
