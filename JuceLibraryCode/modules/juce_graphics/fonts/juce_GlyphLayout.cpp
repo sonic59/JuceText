@@ -49,6 +49,9 @@ float Glyph::getLineYOffset() const
 }
 
 //==============================================================================
+GlyphRun::GlyphRun() : stringRange(0,0), colour(Colours::black)
+{
+}
 
 GlyphRun::GlyphRun (const int numGlyphs, const int stringStart, const int stringEnd) : stringRange(stringStart, stringEnd), colour(Colours::black)
 {
@@ -81,6 +84,16 @@ Glyph& GlyphRun::getGlyph (const int index) const
     return *glyphs [index];
 }
 
+void GlyphRun::setNumGlyphs(const int newNumGlyphs)
+{
+    glyphs.ensureStorageAllocated (newNumGlyphs);
+}
+
+void GlyphRun::setStringRange(const Range<int>& newStringRange)
+{
+    stringRange = newStringRange;
+}
+
 void GlyphRun::setFont(const Font& newFont)
 {
     font = newFont;
@@ -97,6 +110,11 @@ void GlyphRun::addGlyph (const Glyph* glyph)
 }
 
 //==============================================================================
+
+GlyphLine::GlyphLine() : stringRange(0, 0), lineOrigin(0.0f, 0.0f), ascent(0.0f),
+                         descent(0.0f), leading(0.0f)
+{
+}
 
 GlyphLine::GlyphLine (const int numRuns, const Range<int> stringRange_,
                       const Point<float> lineOrigin_, const float ascent_,
@@ -140,6 +158,26 @@ GlyphRun& GlyphLine::getGlyphRun (const int index) const
     jassert (isPositiveAndBelow (index, runs.size()));
 
     return *runs [index];
+}
+
+void GlyphLine::setNumRuns(const int newNumRuns)
+{
+    runs.ensureStorageAllocated (newNumRuns);
+}
+
+void GlyphLine::setStringRange(const Range<int>& newStringRange)
+{
+    stringRange = newStringRange;
+}
+
+void GlyphLine::setLineOrigin(const Point<float>& newLineOrigin)
+{
+    lineOrigin = newLineOrigin;
+}
+
+void GlyphLine::setDescent(const float newDescent)
+{
+    descent = newDescent;
 }
 
 void GlyphLine::addGlyphRun (const GlyphRun* glyphRun)

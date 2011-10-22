@@ -49,6 +49,7 @@ private:
 class JUCE_API  GlyphRun
 {
 public:
+    GlyphRun();
     GlyphRun(const int numGlyphs, const int stringStart, const int stringEnd);
     ~GlyphRun();
 
@@ -57,6 +58,8 @@ public:
     const Colour& getColour() const;
     Glyph& getGlyph (const int index) const;
 
+    void setNumGlyphs(const int newNumGlyphs);
+    void setStringRange(const Range<int>& newStringRange);
     void setFont(const Font& newFont);
     void setColour(const Colour& newColour);
 
@@ -74,6 +77,7 @@ private:
 class JUCE_API  GlyphLine
 {
 public:
+    GlyphLine();
     GlyphLine(const int numRuns, const Range<int> stringRange, const Point<float> lineOrigin,
               const float ascent, const float descent, const float leading);
     ~GlyphLine();
@@ -84,6 +88,11 @@ public:
     float getDescent() const;
     float getLeading() const;
     GlyphRun& getGlyphRun (const int index) const;
+
+    void setNumRuns(const int newNumRuns);
+    void setStringRange(const Range<int>& newStringRange);
+    void setLineOrigin(const Point<float>& newLineOrigin);
+    void setDescent(const float newDescent);
 
     void addGlyphRun (const GlyphRun* glyphRun);
 
