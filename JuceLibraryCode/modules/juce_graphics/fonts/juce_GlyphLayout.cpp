@@ -160,11 +160,6 @@ GlyphRun& GlyphLine::getGlyphRun (const int index) const
     return *runs [index];
 }
 
-void GlyphLine::setNumRuns(const int newNumRuns)
-{
-    runs.ensureStorageAllocated (newNumRuns);
-}
-
 void GlyphLine::setStringRange(const Range<int>& newStringRange)
 {
     stringRange = newStringRange;

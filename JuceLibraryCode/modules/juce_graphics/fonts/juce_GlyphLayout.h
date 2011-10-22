@@ -89,7 +89,6 @@ public:
     float getLeading() const;
     GlyphRun& getGlyphRun (const int index) const;
 
-    void setNumRuns(const int newNumRuns);
     void setStringRange(const Range<int>& newStringRange);
     void setLineOrigin(const Point<float>& newLineOrigin);
     void setDescent(const float newDescent);
