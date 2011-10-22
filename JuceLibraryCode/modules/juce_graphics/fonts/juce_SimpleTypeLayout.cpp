@@ -150,121 +150,60 @@ void SimpleTypeLayout::appendText (const AttributedString& text, Range<int> stri
         tokens.add (new Token (currentString, font, lastCharType == 2));
 }
 
-void SimpleTypeLayout::layout (int maxWidth,
-                         const Justification& justification,
-                         const bool attemptToBalanceLineLengths)
+void SimpleTypeLayout::layout (int maxWidth)
 {
-    if (attemptToBalanceLineLengths)
+    int x = 0;
+    int y = 0;
+    int h = 0;
+    totalLines = 0;
+    int i;
+
+    for (i = 0; i < tokens.size(); ++i)
     {
-        const int originalW = maxWidth;
-        int bestWidth = maxWidth;
-        float bestLineProportion = 0.0f;
+        Token* const t = tokens.getUnchecked(i);
+        t->x = x;
+        t->y = y;
+        t->line = totalLines;
+        x += t->w;
+        h = jmax (h, t->h);
 
-        while (maxWidth > originalW / 2)
+        const Token* nextTok = tokens [i + 1];
+
+        if (nextTok == 0)
+            break;
+
+        if (t->isNewLine || ((! nextTok->isWhitespace) && x + nextTok->w > maxWidth))
         {
-            layout (maxWidth, justification, false);
-
-            if (getNumLines() <= 1)
-                return;
-
-            const int lastLineW = getLineWidth (getNumLines() - 1);
-            const int lastButOneLineW = getLineWidth (getNumLines() - 2);
-
-            const float prop = lastLineW / (float) lastButOneLineW;
-
-            if (prop > 0.9f)
-                return;
-
-            if (prop > bestLineProportion)
+            // finished a line, so go back and update the heights of the things on it
+            for (int j = i; j >= 0; --j)
             {
-                bestLineProportion = prop;
-                bestWidth = maxWidth;
+                Token* const tok = tokens.getUnchecked(j);
+
+                if (tok->line == totalLines)
+                    tok->lineHeight = h;
+                else
+                    break;
             }
 
-            maxWidth -= 10;
-        }
-
-        layout (bestWidth, justification, false);
-    }
-    else
-    {
-        int x = 0;
-        int y = 0;
-        int h = 0;
-        totalLines = 0;
-        int i;
-
-        for (i = 0; i < tokens.size(); ++i)
-        {
-            Token* const t = tokens.getUnchecked(i);
-            t->x = x;
-            t->y = y;
-            t->line = totalLines;
-            x += t->w;
-            h = jmax (h, t->h);
-
-            const Token* nextTok = tokens [i + 1];
-
-            if (nextTok == 0)
-                break;
-
-            if (t->isNewLine || ((! nextTok->isWhitespace) && x + nextTok->w > maxWidth))
-            {
-                // finished a line, so go back and update the heights of the things on it
-                for (int j = i; j >= 0; --j)
-                {
-                    Token* const tok = tokens.getUnchecked(j);
-
-                    if (tok->line == totalLines)
-                        tok->lineHeight = h;
-                    else
-                        break;
-                }
-
-                x = 0;
-                y += h;
-                h = 0;
-                ++totalLines;
-            }
-        }
-
-        // finished a line, so go back and update the heights of the things on it
-        for (int j = jmin (i, tokens.size() - 1); j >= 0; --j)
-        {
-            Token* const t = tokens.getUnchecked(j);
-
-            if (t->line == totalLines)
-                t->lineHeight = h;
-            else
-                break;
-        }
-
-        ++totalLines;
-
-        if (! justification.testFlags (Justification::left))
-        {
-            int totalW = getWidth();
-
-            for (i = totalLines; --i >= 0;)
-            {
-                const int lineW = getLineWidth (i);
-
-                int dx = 0;
-                if (justification.testFlags (Justification::horizontallyCentred))
-                    dx = (totalW - lineW) / 2;
-                else if (justification.testFlags (Justification::right))
-                    dx = totalW - lineW;
-
-                for (int j = tokens.size(); --j >= 0;)
-                {
-                    Token* const t = tokens.getUnchecked(j);
-
-                    if (t->line == i)
-                        t->x += dx;
-                }
-            }
+            x = 0;
+            y += h;
+            h = 0;
+            ++totalLines;
         }
     }
+
+    // finished a line, so go back and update the heights of the things on it
+    for (int j = jmin (i, tokens.size() - 1); j >= 0; --j)
+    {
+        Token* const t = tokens.getUnchecked(j);
+
+        if (t->line == totalLines)
+            t->lineHeight = h;
+        else
+            break;
+    }
+
+    ++totalLines;
 }
 
 int SimpleTypeLayout::getLineWidth (const int lineNumber) const
@@ -319,7 +258,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
         }
     }
     // Run layout to break strings into words and create lines from words
-    layout ((int) glyphLayout.getWidth(), Justification::left, false);
+    layout ((int) glyphLayout.getWidth());
     // Use tokens to create Glyph Structures
     glyphLayout.setNumLines(getNumLines());
     // Set Starting Positions to 0

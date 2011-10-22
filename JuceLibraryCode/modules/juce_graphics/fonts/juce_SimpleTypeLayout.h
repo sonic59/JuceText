@@ -36,7 +36,7 @@ public:
 
     void clear();
     void appendText (const AttributedString& text, Range<int> stringRange, const Font& font);
-    void layout (int maxWidth, const Justification& justification, const bool attemptToBalanceLineLengths);
+    void layout (int maxWidth);
     int getLineWidth (const int lineNumber) const;
     int getWidth() const;
     int getNumLines() const;
