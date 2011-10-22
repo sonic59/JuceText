@@ -319,14 +319,124 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
         }
     }
     // Run layout to break strings into words and create lines from words
-    Justification justification(Justification::left);
-    if (text.getTextAlignment() == AttributedString::left) justification = Justification::left;
-    if (text.getTextAlignment() == AttributedString::right) justification = Justification::right;
-    if (text.getTextAlignment() == AttributedString::center) justification = Justification::horizontallyCentred;
-    layout ((int) glyphLayout.getWidth(), justification, false);
-    // Use lines to create GlyphLines
-    // Use words and colors to create GlyphRuns
-    // Use words to create Glyphs
+    layout ((int) glyphLayout.getWidth(), Justification::left, false);
+    // Use tokens to create Glyph Structures
+    glyphLayout.setNumLines(getNumLines());
+    // Set Starting Positions to 0
+    int charPosition = 0;
+    int lineStartPosition = 0;
+    int runStartPosition = 0;
+    // Create first GlyphLine and GlyphRun
+    GlyphLine* glyphLine = new GlyphLine();
+    GlyphRun* glyphRun = new GlyphRun();
+    for (int i = 0; i < tokens.size(); ++i)
+    {
+        const Token* const t = tokens.getUnchecked(i);
+        // See TextLayout::draw
+        const float xOffset = t->x;
+        const float yOffset = t->y;
+        // See GlyphArrangement::addCurtailedLineOfText
+        Array <int> newGlyphs;
+        Array <float> xOffsets;
+        t->font.getGlyphPositions (t->text.trimEnd(), newGlyphs, xOffsets);
+        // Resize glyph run array
+        glyphRun->setNumGlyphs(glyphRun->getNumGlyphs() + newGlyphs.size());
+        // Add each glyph in the token to the current GlyphRun
+        for (int j = 0; j < newGlyphs.size(); ++j)
+        {
+            const float thisX = xOffsets.getUnchecked (j);
+            // Check if this is the first character in the line
+            if (charPosition == lineStartPosition)
+            {
+                // Save line offset data
+                Point<float> origin (xOffset, yOffset + t->font.getAscent());
+                glyphLine->setLineOrigin (origin);
+            }
+            Glyph* glyph = new Glyph (newGlyphs.getUnchecked(j), xOffset + thisX, 0.0f);
+            glyphRun->addGlyph (glyph);
+            charPosition++;
+        }
+        // We have reached the end of a token, we may need to create a new run or line
+        if (i + 1 == tokens.size())
+        {
+            // We have reached the last token
+            // Close GlyphRun
+            // charPosition has already been incremented to point to the first character in the next token
+            Range<int> runRange (runStartPosition, charPosition - 1);
+            glyphRun->setStringRange (runRange);
+            glyphRun->setFont (t->font);
+            // Check if run descent is the largest in the line
+            if (t->font.getDescent() > glyphLine->getDescent()) glyphLine->setDescent (t->font.getDescent());
+            glyphLine->addGlyphRun (glyphRun);
+            // Close GlyphLine
+            Range<int> lineRange (lineStartPosition, charPosition - 1);
+            glyphLine->setStringRange (lineRange);
+            glyphLayout.addGlyphLine (glyphLine);
+        }
+        else
+        {
+            // We have not yet reached the last token
+            const Token* const nextt = tokens.getUnchecked (i+1);
+            if (t->font != nextt->font)
+            {
+                //The next token has a new font
+                // Close GlyphRun
+                // charPosition has already been incremented to point to the first character in the next token
+                Range<int> runRange (runStartPosition, charPosition - 1);
+                glyphRun->setStringRange (runRange);
+                glyphRun->setFont (t->font);
+                // Check if run descent is the largest in the line
+                if (t->font.getDescent() > glyphLine->getDescent()) glyphLine->setDescent (t->font.getDescent());
+                glyphLine->addGlyphRun (glyphRun);
+                // Create the next GlyphRun
+                runStartPosition = charPosition;
+                glyphRun = new GlyphRun();
+            }
+            if (t->line != nextt->line)
+            {
+                // The next token is in a new line
+                // Close GlyphRun
+                // charPosition has already been incremented to point to the first character in the next token
+                Range<int> runRange (runStartPosition, charPosition - 1);
+                glyphRun->setStringRange (runRange);
+                glyphRun->setFont(t->font);
+                // Check if run descent is the largest in the line
+                if (t->font.getDescent() > glyphLine->getDescent()) glyphLine->setDescent (t->font.getDescent());
+                glyphLine->addGlyphRun (glyphRun);
+                // Close GlyphLine
+                Range<int> lineRange (lineStartPosition, charPosition - 1);
+                glyphLine->setStringRange (lineRange);
+                glyphLayout.addGlyphLine (glyphLine);
+                // Create the next GlyphLine and GlyphRun
+                runStartPosition = charPosition;
+                lineStartPosition = charPosition;
+                glyphLine = new GlyphLine();
+                glyphRun = new GlyphRun();
+            }
+        }
+    }
+    // Apply Layout Text Alignment
+    if (text.getTextAlignment() == AttributedString::right || text.getTextAlignment() == AttributedString::center)
+    {
+        int totalW = (int) glyphLayout.getWidth();
+        for (int i = 0; i < getNumLines(); ++i)
+        {
+            const int lineW = getLineWidth (i);
+            int dx = 0;
+            if (text.getTextAlignment() == AttributedString::right)
+            {
+                dx = totalW - lineW;
+            }
+            else if (text.getTextAlignment() == AttributedString::center)
+            {
+                dx = (totalW - lineW) / 2;
+            }
+            GlyphLine& glyphLine = glyphLayout.getGlyphLine (i);
+            Point<float> lineOrigin = glyphLine.getLineOrigin();
+            lineOrigin.setX(lineOrigin.getX() + dx);
+            glyphLine.setLineOrigin(lineOrigin);
+        }
+    }
 }
 
 END_JUCE_NAMESPACE
