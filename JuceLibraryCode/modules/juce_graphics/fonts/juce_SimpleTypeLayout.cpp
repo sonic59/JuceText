@@ -269,8 +269,10 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
     clear();
     int stringLength = text.getText().length();
     int numCharacterAttributes = text.getCharAttributesSize();
+    int rangeStart = 0;
     Font defaultFont;
     Colour defaultColour(Colours::black);
+    Array<RunAttribute> runAttributes;
     Array<CharAttribute> charAttributes;
     charAttributes.ensureStorageAllocated(stringLength);
     // Iterate through every character in the string
@@ -283,11 +285,13 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
         for (int j = 0; j < numCharacterAttributes; ++j)
         {
             Attr* attr = text.getCharAttribute(j);
+            // Check if the current character falls within the range of a font attribute
             if (attr->attribute == Attr::font && (i >= attr->range.getStart()) && (i < attr->range.getEnd()))
             {
                 AttrFont* attrFont = static_cast<AttrFont*>(attr);
                 attribute.font = &(attrFont->font);
             }
+            // Check if the current character falls within the range of a foreground colour attribute
             if (attr->attribute == Attr::foregroundColour && (i >= attr->range.getStart()) && (i < attr->range.getEnd()))
             {
                 AttrColour* attrColour = static_cast<AttrColour*>(attr);
@@ -295,25 +299,22 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
             }
         }
         charAttributes.add(attribute);
-    }
-    int rangeStart = 0;
-    Array<RunAttribute> runAttributes;
-    for (int i = 0; i < stringLength; ++i)
-    {
-        if ((charAttributes[i].font != charAttributes[i+1].font) ||
-            (charAttributes[i].colour != charAttributes[i+1].colour) ||
-            (*(charAttributes[i].font) != *(charAttributes[i+1].font)) ||
-            (*(charAttributes[i].colour) != *(charAttributes[i+1].colour)) ||
+        // Skip the first character since we are comparing to previous characters
+        if (i == 0) continue;
+        if ((charAttributes[i-1].font != charAttributes[i].font) ||
+            (charAttributes[i-1].colour != charAttributes[i].colour) ||
+            (*(charAttributes[i-1].font) != *(charAttributes[i].font)) ||
+            (*(charAttributes[i-1].colour) != *(charAttributes[i].colour)) ||
             (i + 1 == stringLength))
         {
-            // The next character has a new font or new color or there is no next character
+            // The current character has a new font or new color or there is no next character
             RunAttribute attribute;
             attribute.range.setStart(rangeStart);
-            attribute.range.setEnd(i + 1);
-            attribute.font = charAttributes[i].font;
-            attribute.colour = charAttributes[i].colour;
+            attribute.range.setEnd(i);
+            attribute.font = charAttributes[i-1].font;
+            attribute.colour = charAttributes[i-1].colour;
             runAttributes.add(attribute);
-            rangeStart = i + 1;
+            rangeStart = i;
         }
 
     }
