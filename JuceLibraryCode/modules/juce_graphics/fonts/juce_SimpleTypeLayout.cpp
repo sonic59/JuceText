@@ -85,6 +85,25 @@ private:
     JUCE_LEAK_DETECTOR (Token);
 };
 
+class SimpleTypeLayout::CharAttribute
+{
+public:
+    virtual ~CharAttribute() {}
+
+    Font* font;
+    Colour* colour;
+private:
+    JUCE_LEAK_DETECTOR (CharAttribute);
+};
+
+class SimpleTypeLayout::RunAttribute : public CharAttribute
+{
+public:
+    Range<int> range;
+private:
+    JUCE_LEAK_DETECTOR (RunAttribute);
+};
+
 //==============================================================================
 SimpleTypeLayout::SimpleTypeLayout() : totalLines (0)
 {
@@ -247,20 +266,63 @@ int SimpleTypeLayout::getNumLines() const
 
 void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout)
 {
-    // Assume that font attributes are present for entire string range
-    // Assume that the font attribute list doesn't have overlapping ranges
-    // Take the font attribute list and plug it into appendText
     clear();
+    int stringLength = text.getText().length();
     int numCharacterAttributes = text.getCharAttributesSize();
-    for (int i = 0; i < numCharacterAttributes; ++i)
+    Font defaultFont;
+    Colour defaultColour(Colours::black);
+    Array<CharAttribute> charAttributes;
+    charAttributes.ensureStorageAllocated(stringLength);
+    // Iterate through every character in the string
+    for (int i = 0; i < stringLength; ++i)
     {
-        Attr* attr = text.getCharAttribute(i);
-        if (attr->attribute == Attr::font)
+        CharAttribute attribute;
+        attribute.font = &defaultFont;
+        attribute.colour = &defaultColour;
+        // Iterate through every character attribute
+        for (int j = 0; j < numCharacterAttributes; ++j)
         {
-            AttrFont* attrFont = static_cast<AttrFont*>(attr);
-            appendText(text, attrFont->range, attrFont->font, Colours::blue);
+            Attr* attr = text.getCharAttribute(j);
+            if (attr->attribute == Attr::font && (i >= attr->range.getStart()) && (i < attr->range.getEnd()))
+            {
+                AttrFont* attrFont = static_cast<AttrFont*>(attr);
+                attribute.font = &(attrFont->font);
+            }
+            if (attr->attribute == Attr::foregroundColour && (i >= attr->range.getStart()) && (i < attr->range.getEnd()))
+            {
+                AttrColour* attrColour = static_cast<AttrColour*>(attr);
+                attribute.colour = &(attrColour->colour);
+            }
         }
+        charAttributes.add(attribute);
     }
+    int rangeStart = 0;
+    Array<RunAttribute> runAttributes;
+    for (int i = 0; i < stringLength; ++i)
+    {
+        if ((charAttributes[i].font != charAttributes[i+1].font) ||
+            (charAttributes[i].colour != charAttributes[i+1].colour) ||
+            (*(charAttributes[i].font) != *(charAttributes[i+1].font)) ||
+            (*(charAttributes[i].colour) != *(charAttributes[i+1].colour)) ||
+            (i + 1 == stringLength))
+        {
+            // The next character has a new font or new color or there is no next character
+            RunAttribute attribute;
+            attribute.range.setStart(rangeStart);
+            attribute.range.setEnd(i + 1);
+            attribute.font = charAttributes[i].font;
+            attribute.colour = charAttributes[i].colour;
+            runAttributes.add(attribute);
+            rangeStart = i + 1;
+        }
+
+    }
+    charAttributes.clear();
+    for (int i = 0; i < runAttributes.size(); ++i)
+    {
+        appendText(text, runAttributes[i].range, *(runAttributes[i].font), *(runAttributes[i].colour));
+    }
+    runAttributes.clear();
     // Run layout to break strings into words and create lines from words
     layout ((int) glyphLayout.getWidth());
     // Use tokens to create Glyph Structures

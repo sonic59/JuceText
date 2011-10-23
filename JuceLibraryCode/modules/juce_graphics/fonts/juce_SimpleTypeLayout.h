@@ -44,6 +44,8 @@ public:
 
 private:
     class Token;
+    class CharAttribute;
+    class RunAttribute;
     friend class OwnedArray <Token>;
     OwnedArray <Token> tokens;
     int totalLines;
