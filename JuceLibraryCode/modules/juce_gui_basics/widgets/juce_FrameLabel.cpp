@@ -105,7 +105,7 @@ String FrameLabel::getText (const bool returnActiveEditorContents) const
                 : textValue.toString();
 }
 
-OwnedArray<AttributedString>& FrameLabel::getParagraphs (const bool returnActiveEditorContents) const
+OwnedArray<AttributedString>& FrameLabel::getParagraphs (const bool) const
 {
     return *textValues;
 }

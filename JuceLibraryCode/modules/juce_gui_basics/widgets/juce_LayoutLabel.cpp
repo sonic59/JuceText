@@ -105,7 +105,7 @@ String LayoutLabel::getText (const bool returnActiveEditorContents) const
                 : textValue.toString();
 }
 
-AttributedString& LayoutLabel::getAttributedText (const bool returnActiveEditorContents) const
+AttributedString& LayoutLabel::getAttributedText (const bool) const
 {
     return *attributedTextValue;
 }

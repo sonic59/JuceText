@@ -339,8 +339,8 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
     {
         const Token* const t = tokens.getUnchecked(i);
         // See TextLayout::draw
-        const float xOffset = t->x;
-        const float yOffset = t->y;
+        const float xOffset = (float) t->x;
+        const float yOffset =(float)  t->y;
         // See GlyphArrangement::addCurtailedLineOfText
         Array <int> newGlyphs;
         Array <float> xOffsets;
