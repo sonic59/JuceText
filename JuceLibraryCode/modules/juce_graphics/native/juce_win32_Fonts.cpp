@@ -112,6 +112,11 @@ struct DefaultFontNames
     String defaultSans, defaultSerif, defaultFixed, defaultFallback;
 };
 
+TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
+{
+    return new SimpleTypeLayout();
+}
+
 Typeface::Ptr Font::getDefaultTypefaceForFont (const Font& font)
 {
     static DefaultFontNames defaultNames;
