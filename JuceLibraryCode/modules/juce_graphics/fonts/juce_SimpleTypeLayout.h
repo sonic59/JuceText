@@ -35,7 +35,7 @@ public:
     ~SimpleTypeLayout();
 
     void clear();
-    void appendText (const AttributedString& text, Range<int> stringRange, const Font& font);
+    void appendText (const AttributedString& text, Range<int> stringRange, const Font& font, const Colour& colour);
     void layout (int maxWidth);
     int getLineWidth (const int lineNumber) const;
     int getWidth() const;

@@ -31,9 +31,11 @@ class SimpleTypeLayout::Token
 public:
     Token (const String& t,
            const Font& f,
+           const Colour& c,
            const bool isWhitespace_)
     : text (t),
     font (f),
+    colour (c),
     x(0),
     y(0),
     isWhitespace (isWhitespace_)
@@ -46,6 +48,7 @@ public:
     Token (const Token& other)
     : text (other.text),
     font (other.font),
+    colour (other.colour),
     x (other.x),
     y (other.y),
     w (other.w),
@@ -73,6 +76,7 @@ public:
 
     String text;
     Font font;
+    Colour colour;
     int x, y, w, h;
     int line, lineHeight;
     bool isWhitespace, isNewLine;
@@ -98,7 +102,7 @@ void SimpleTypeLayout::clear()
     totalLines = 0;
 }
 
-void SimpleTypeLayout::appendText (const AttributedString& text, Range<int> stringRange, const Font& font)
+void SimpleTypeLayout::appendText (const AttributedString& text, Range<int> stringRange, const Font& font, const Colour& colour)
 {
     String stringText = text.getText().substring(stringRange.getStart(), stringRange.getEnd());
     String::CharPointerType t (stringText.getCharPointer());
@@ -129,7 +133,7 @@ void SimpleTypeLayout::appendText (const AttributedString& text, Range<int> stri
         {
             if (currentString.isNotEmpty())
             {
-                tokens.add (new Token (currentString, font,
+                tokens.add (new Token (currentString, font, colour,
                                        lastCharType == 2 || lastCharType == 0));
             }
 
@@ -147,7 +151,7 @@ void SimpleTypeLayout::appendText (const AttributedString& text, Range<int> stri
     }
 
     if (currentString.isNotEmpty())
-        tokens.add (new Token (currentString, font, lastCharType == 2));
+        tokens.add (new Token (currentString, font, colour, lastCharType == 2));
 }
 
 void SimpleTypeLayout::layout (int maxWidth)
@@ -254,7 +258,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
         if (attr->attribute == Attr::font)
         {
             AttrFont* attrFont = static_cast<AttrFont*>(attr);
-            appendText(text, attrFont->range, attrFont->font);
+            appendText(text, attrFont->range, attrFont->font, Colours::blue);
         }
     }
     // Run layout to break strings into words and create lines from words
@@ -304,6 +308,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
             Range<int> runRange (runStartPosition, charPosition - 1);
             glyphRun->setStringRange (runRange);
             glyphRun->setFont (t->font);
+            glyphRun->setColour (t->colour);
             // Check if run descent is the largest in the line
             if (t->font.getDescent() > glyphLine->getDescent()) glyphLine->setDescent (t->font.getDescent());
             glyphLine->addGlyphRun (glyphRun);
@@ -316,14 +321,15 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
         {
             // We have not yet reached the last token
             const Token* const nextt = tokens.getUnchecked (i+1);
-            if (t->font != nextt->font)
+            if (t->font != nextt->font || t->colour != nextt->colour)
             {
-                //The next token has a new font
+                //The next token has a new font or new colour
                 // Close GlyphRun
                 // charPosition has already been incremented to point to the first character in the next token
                 Range<int> runRange (runStartPosition, charPosition - 1);
                 glyphRun->setStringRange (runRange);
                 glyphRun->setFont (t->font);
+                glyphRun->setColour (t->colour);
                 // Check if run descent is the largest in the line
                 if (t->font.getDescent() > glyphLine->getDescent()) glyphLine->setDescent (t->font.getDescent());
                 glyphLine->addGlyphRun (glyphRun);
@@ -339,6 +345,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
                 Range<int> runRange (runStartPosition, charPosition - 1);
                 glyphRun->setStringRange (runRange);
                 glyphRun->setFont(t->font);
+                glyphRun->setColour (t->colour);
                 // Check if run descent is the largest in the line
                 if (t->font.getDescent() > glyphLine->getDescent()) glyphLine->setDescent (t->font.getDescent());
                 glyphLine->addGlyphRun (glyphRun);
