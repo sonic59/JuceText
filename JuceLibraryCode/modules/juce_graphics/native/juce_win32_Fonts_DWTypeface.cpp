@@ -128,16 +128,6 @@ class PathGeometrySink : public IDWriteGeometrySink
         Path path;
 };
 
-// SafeRelease inline function.
-template <class T> inline void SafeRelease (T **ppT)
-{
-    if (*ppT)
-    {
-        (*ppT)->Release();
-        *ppT = nullptr;
-    }
-}
-
 class WindowsDWriteTypeface  : public Typeface
 {
 public:
@@ -174,15 +164,15 @@ public:
         ascent /= totalSize;
         emSize = 1.0f / (totalSize / designUnitsPerEm);
 
-        SafeRelease (&pFont);
-        SafeRelease (&pFontFamily);
-        SafeRelease (&pFontCollection);
-        SafeRelease (&pDWriteFactory);
+        safeRelease (&pFont);
+        safeRelease (&pFontFamily);
+        safeRelease (&pFontCollection);
+        safeRelease (&pDWriteFactory);
     }
 
     ~WindowsDWriteTypeface()
     {
-        SafeRelease (&pFontFace);
+        safeRelease (&pFontFace);
     }
 
     float getAscent() const     { return ascent; }
@@ -251,7 +241,7 @@ public:
         if (!pathTransform.isIdentity())
             path.applyTransform (pathTransform);
         pPathGeometrySink->Close();
-        SafeRelease (&pPathGeometrySink);
+        safeRelease (&pPathGeometrySink);
         return true;
     }
 
@@ -262,6 +252,16 @@ private:
     int designUnitsPerEm;
     AffineTransform pathTransform;
 
+    // safeRelease inline function.
+    template <class T> inline void safeRelease (T **ppT)
+    {
+        if (*ppT)
+        {
+            (*ppT)->Release();
+            *ppT = nullptr;
+        }
+    }
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WindowsDWriteTypeface);
 };
 
@@ -269,9 +269,4 @@ Typeface::Ptr Typeface::createSystemTypefaceFor (const Font& font)
 {
     //return new WindowsTypeface (font);
     return new WindowsDWriteTypeface (font);
-}
-
-TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
-{
-    return new SimpleTypeLayout();
 }

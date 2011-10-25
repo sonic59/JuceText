@@ -58,9 +58,9 @@ public:
         const float defaultTotalSize = std::abs ((float) defaultFontMetrics.ascent) + std::abs ((float) defaultFontMetrics.descent);
         float defaultEmSize = 1.0f / (defaultTotalSize / (float) defaultFontMetrics.designUnitsPerEm);
 
-        SafeRelease (&pDefaultFontFace);
-        SafeRelease (&pDefaultFont);
-        SafeRelease (&pDefaultFontFamily);
+        safeRelease (&pDefaultFontFace);
+        safeRelease (&pDefaultFont);
+        safeRelease (&pDefaultFontFamily);
 
         String localeName("en-us");
 
@@ -135,9 +135,9 @@ public:
                 const float totalSize = std::abs ((float) fontMetrics.ascent) + std::abs ((float) fontMetrics.descent);
                 float emSize = 1.0f / (totalSize / (float) fontMetrics.designUnitsPerEm);
 
-                SafeRelease (&pFontFace);
-                SafeRelease (&pFont);
-                SafeRelease (&pFontFamily);
+                safeRelease (&pFontFace);
+                safeRelease (&pFont);
+                safeRelease (&pFontFamily);
 
                 pTextLayout->SetFontSize(emSize, range);
             }
@@ -153,23 +153,29 @@ public:
             glyphLayout.getY()
             );
 
-        SafeRelease (&pTextRenderer);
-        SafeRelease (&pTextLayout);
-        SafeRelease (&pTextFormat);
-        SafeRelease (&pFontCollection);
-        SafeRelease (&pDWriteFactory);
+        safeRelease (&pTextRenderer);
+        safeRelease (&pTextLayout);
+        safeRelease (&pTextFormat);
+        safeRelease (&pFontCollection);
+        safeRelease (&pDWriteFactory);
     }
 
 private:
-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectWriteTypeLayout);
 
-        // SafeRelease inline function.
-        template <class T> inline void SafeRelease (T **ppT)
+    // safeRelease inline function.
+    template <class T> inline void safeRelease (T **ppT)
+    {
+        if (*ppT)
         {
-            if (*ppT)
-            {
-                (*ppT)->Release();
-                *ppT = nullptr;
-            }
+            (*ppT)->Release();
+            *ppT = nullptr;
         }
+    }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectWriteTypeLayout);
 };
+
+TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
+{
+    return new SimpleTypeLayout();
+}
