@@ -1002,6 +1002,9 @@
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_graphics\fonts\juce_AttributedString.cpp">
       <Filter>Juce Modules\juce_graphics\fonts</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_graphics\native\juce_win32_Fonts_DirectWrite.cpp">
+      <Filter>Juce Modules\juce_graphics\native</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\MainWindow.h">

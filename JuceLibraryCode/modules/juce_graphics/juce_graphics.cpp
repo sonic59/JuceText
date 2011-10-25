@@ -43,6 +43,12 @@
 #if JUCE_MAC
  #import <QuartzCore/QuartzCore.h>
 
+#elif JUCE_WINDOWS
+ #include <d2d1.h>
+ #include <dwrite.h>
+ #pragma comment (lib, "Dwrite.lib")
+ #pragma comment (lib, "D2d1.lib")
+
 #elif JUCE_IOS
  #import <QuartzCore/QuartzCore.h>
  #import <CoreText/CoreText.h>
@@ -105,6 +111,7 @@ BEGIN_JUCE_NAMESPACE
   #include "native/juce_win32_Direct2DGraphicsContext.cpp"
  #endif
  #include "native/juce_win32_Fonts.cpp"
+ #include "native/juce_win32_Fonts_DirectWrite.cpp"
 
 #elif JUCE_LINUX
  #include "native/juce_linux_Fonts.cpp"

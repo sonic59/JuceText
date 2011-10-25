@@ -112,11 +112,6 @@ struct DefaultFontNames
     String defaultSans, defaultSerif, defaultFixed, defaultFallback;
 };
 
-TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
-{
-    return new SimpleTypeLayout();
-}
-
 Typeface::Ptr Font::getDefaultTypefaceForFont (const Font& font)
 {
     static DefaultFontNames defaultNames;
@@ -418,8 +413,3 @@ private:
 };
 
 const MAT2 WindowsTypeface::identityMatrix = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
-
-Typeface::Ptr Typeface::createSystemTypefaceFor (const Font& font)
-{
-    return new WindowsTypeface (font);
-}
