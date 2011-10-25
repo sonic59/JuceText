@@ -145,14 +145,8 @@ public:
         : Typeface (font.getTypefaceName()),
           ascent (0.0f)
     {
-        float dpiY = 0;
-        ID2D1Factory *m_pD2DFactory = nullptr;
-        HRESULT hr = D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
-        m_pD2DFactory->GetDesktopDpi (&dpiX, &dpiY);
-        SafeRelease (&m_pD2DFactory);
-
         IDWriteFactory* pDWriteFactory = nullptr;
-        hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+        HRESULT hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
             reinterpret_cast<IUnknown**>(&pDWriteFactory));
 
         IDWriteFontCollection* pFontCollection = nullptr;
@@ -265,7 +259,6 @@ private:
     IDWriteFontFace* pFontFace;
     float emSize;
     float ascent;
-    float dpiX;
     int designUnitsPerEm;
     AffineTransform pathTransform;
 
