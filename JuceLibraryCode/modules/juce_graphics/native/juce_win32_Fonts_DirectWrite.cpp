@@ -70,7 +70,7 @@ class PathGeometrySink : public IDWriteGeometrySink
             }
             else
             {
-                *ppvObject = NULL;
+                *ppvObject = nullptr;
                 hr = E_NOINTERFACE;
             }
 
@@ -82,9 +82,9 @@ class PathGeometrySink : public IDWriteGeometrySink
         {
             for (UINT i = 0; i < beziersCount; ++i)
             {
-                path.cubicTo((float) beziers[i].point1.x, (float) beziers[i].point1.y, 
-                             (float) beziers[i].point2.x, (float) beziers[i].point2.y,
-                             (float) beziers[i].point3.x, (float) beziers[i].point3.y);
+                path.cubicTo ((float) beziers[i].point1.x, (float) beziers[i].point1.y,
+                              (float) beziers[i].point2.x, (float) beziers[i].point2.y,
+                              (float) beziers[i].point3.x, (float) beziers[i].point3.y);
             }
         }
 
@@ -92,7 +92,7 @@ class PathGeometrySink : public IDWriteGeometrySink
         {
             for (UINT i = 0; i < pointsCount; ++i)
             {
-                path.lineTo((float) points[i].x, (float) points[i].y);
+                path.lineTo ((float) points[i].x, (float) points[i].y);
             }
             
         }
@@ -110,8 +110,8 @@ class PathGeometrySink : public IDWriteGeometrySink
 
         STDMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode)
         {
-            if (fillMode == D2D1_FILL_MODE_WINDING) path.setUsingNonZeroWinding(true);
-            else if (fillMode ==  D2D1_FILL_MODE_ALTERNATE) path.setUsingNonZeroWinding(false);
+            if (fillMode == D2D1_FILL_MODE_WINDING) path.setUsingNonZeroWinding (true);
+            else if (fillMode ==  D2D1_FILL_MODE_ALTERNATE) path.setUsingNonZeroWinding (false);
         }
 
         STDMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT /*vertexFlags*/)
@@ -129,12 +129,12 @@ class PathGeometrySink : public IDWriteGeometrySink
 };
 
 // SafeRelease inline function.
-template <class T> inline void SafeRelease(T **ppT)
+template <class T> inline void SafeRelease (T **ppT)
 {
     if (*ppT)
     {
         (*ppT)->Release();
-        *ppT = NULL;
+        *ppT = nullptr;
     }
 }
 
@@ -146,16 +146,16 @@ public:
           ascent (0.0f)
     {
         float dpiY = 0;
-        ID2D1Factory *m_pD2DFactory = NULL;
-        HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
+        ID2D1Factory *m_pD2DFactory = nullptr;
+        HRESULT hr = D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
         m_pD2DFactory->GetDesktopDpi (&dpiX, &dpiY);
-        SafeRelease(&m_pD2DFactory);
+        SafeRelease (&m_pD2DFactory);
 
-        IDWriteFactory* pDWriteFactory = NULL;
-        hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+        IDWriteFactory* pDWriteFactory = nullptr;
+        hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
             reinterpret_cast<IUnknown**>(&pDWriteFactory));
 
-        IDWriteFontCollection* pFontCollection = NULL;
+        IDWriteFontCollection* pFontCollection = nullptr;
         hr = pDWriteFactory->GetSystemFontCollection(&pFontCollection);
         BOOL fontFound;
         uint32 fontIndex;
@@ -163,10 +163,10 @@ public:
         if (!fontFound)
             fontIndex = 0;
 
-        IDWriteFontFamily* pFontFamily;
+        IDWriteFontFamily* pFontFamily = nullptr;
         pFontCollection->GetFontFamily (fontIndex, &pFontFamily);
 
-        IDWriteFont* pFont;
+        IDWriteFont* pFont = nullptr;
         DWRITE_FONT_WEIGHT weight = font.isBold() ? DWRITE_FONT_WEIGHT_BOLD  : DWRITE_FONT_WEIGHT_NORMAL;
         DWRITE_FONT_STYLE style = font.isItalic() ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
         pFontFamily->GetFirstMatchingFont (weight, DWRITE_FONT_STRETCH_NORMAL, style, &pFont);
@@ -180,15 +180,15 @@ public:
         ascent /= totalSize;
         emSize = 1.0f / (totalSize / designUnitsPerEm);
 
-        SafeRelease(&pFont);
-        SafeRelease(&pFontFamily);
-        SafeRelease(&pFontCollection);
-        SafeRelease(&pDWriteFactory);
+        SafeRelease (&pFont);
+        SafeRelease (&pFontFamily);
+        SafeRelease (&pFontCollection);
+        SafeRelease (&pDWriteFactory);
     }
 
     ~WindowsDWriteTypeface()
     {
-        SafeRelease(&pFontFace);
+        SafeRelease (&pFontFace);
     }
 
     float getAscent() const     { return ascent; }
@@ -250,14 +250,14 @@ public:
     {
         jassert (path.isEmpty());  // we might need to apply a transform to the path, so this must be empty
         UINT16 glyphIndex = (UINT16) glyphNumber;
-        PathGeometrySink* pPathGeometrySink = NULL;
+        PathGeometrySink* pPathGeometrySink = nullptr;
         pPathGeometrySink = new PathGeometrySink();
-        pFontFace->GetGlyphRunOutline(emSize, &glyphIndex, nullptr, nullptr, 1, false, false, pPathGeometrySink);
+        pFontFace->GetGlyphRunOutline (emSize, &glyphIndex, nullptr, nullptr, 1, false, false, pPathGeometrySink);
         path = pPathGeometrySink->getPath();
-        if (! pathTransform.isIdentity())
+        if (!pathTransform.isIdentity())
             path.applyTransform (pathTransform);
         pPathGeometrySink->Close();
-        SafeRelease(&pPathGeometrySink);
+        SafeRelease (&pPathGeometrySink);
         return true;
     }
 
