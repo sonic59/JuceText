@@ -111,7 +111,7 @@ BEGIN_JUCE_NAMESPACE
   #include "native/juce_win32_Direct2DGraphicsContext.cpp"
  #endif
  #include "native/juce_win32_Fonts.cpp"
- #include "native/juce_win32_Fonts_DirectWrite.cpp"
+ #include "native/juce_win32_Fonts_DWTypeface.cpp"
 
 #elif JUCE_LINUX
  #include "native/juce_linux_Fonts.cpp"
