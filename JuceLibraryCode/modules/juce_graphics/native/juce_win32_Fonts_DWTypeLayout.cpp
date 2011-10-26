@@ -37,31 +37,7 @@ public:
         IDWriteFontCollection* pFontCollection = nullptr;
         hr = pDWriteFactory->GetSystemFontCollection(&pFontCollection);
 
-        // To set the font size, we need to get the font metrics
-        BOOL fontFound;
-        uint32 fontIndex;
         Font defaultFont;
-        pFontCollection->FindFamilyName (defaultFont.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
-        if (!fontFound)
-            fontIndex = 0;
-
-        IDWriteFontFamily* pDefaultFontFamily = nullptr;
-        pFontCollection->GetFontFamily (fontIndex, &pDefaultFontFamily);
-
-        IDWriteFont* pDefaultFont = nullptr;
-        pDefaultFontFamily->GetFirstMatchingFont (DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &pDefaultFont);
-        IDWriteFontFace* pDefaultFontFace = nullptr;
-        pDefaultFont->CreateFontFace (&pDefaultFontFace);
-
-        DWRITE_FONT_METRICS defaultFontMetrics;
-        pDefaultFontFace->GetMetrics(&defaultFontMetrics);
-        const float defaultTotalSize = std::abs ((float) defaultFontMetrics.ascent) + std::abs ((float) defaultFontMetrics.descent);
-        float defaultEmSize = 1.0f / (defaultTotalSize / (float) defaultFontMetrics.designUnitsPerEm);
-
-        safeRelease (&pDefaultFontFace);
-        safeRelease (&pDefaultFont);
-        safeRelease (&pDefaultFontFamily);
-
         String localeName("en-us");
 
         IDWriteTextFormat* pTextFormat = nullptr;
@@ -71,7 +47,7 @@ public:
             DWRITE_FONT_WEIGHT_REGULAR,
             DWRITE_FONT_STYLE_NORMAL,
             DWRITE_FONT_STRETCH_NORMAL,
-            defaultEmSize,
+            defaultFont.getHeight(),
             localeName.toWideCharPointer(),
             &pTextFormat
             );
@@ -114,34 +90,60 @@ public:
                 range.startPosition = attrFont->range.getStart();
                 range.length = attrFont->range.getLength();
                 pTextLayout->SetFontFamilyName(attrFont->font.getTypefaceName().toWideCharPointer(), range);
+                pTextLayout->SetFontSize(attrFont->font.getHeight(), range);
+            }
+            if (attr->attribute == Attr::foregroundColour)
+            {
+                AttrColour* attrColour = static_cast<AttrColour*>(attr);
+                DWRITE_TEXT_RANGE range;
+                range.startPosition = attrColour->range.getStart();
+                range.length = attrColour->range.getLength();
 
-                // To set the font size, we need to get the font metrics
-                pFontCollection->FindFamilyName (attrFont->font.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
-                if (!fontFound)
-                    fontIndex = 0;
-
-                IDWriteFontFamily* pFontFamily = nullptr;
-                pFontCollection->GetFontFamily (fontIndex, &pFontFamily);
-
-                IDWriteFont* pFont = nullptr;
-                DWRITE_FONT_WEIGHT weight = attrFont->font.isBold() ? DWRITE_FONT_WEIGHT_BOLD  : DWRITE_FONT_WEIGHT_NORMAL;
-                DWRITE_FONT_STYLE style = attrFont->font.isItalic() ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
-                pFontFamily->GetFirstMatchingFont (weight, DWRITE_FONT_STRETCH_NORMAL, style, &pFont);
-                IDWriteFontFace* pFontFace = nullptr;
-                pFont->CreateFontFace (&pFontFace);
-
-                DWRITE_FONT_METRICS fontMetrics;
-                pFontFace->GetMetrics(&fontMetrics);
-                const float totalSize = std::abs ((float) fontMetrics.ascent) + std::abs ((float) fontMetrics.descent);
-                float emSize = 1.0f / (totalSize / (float) fontMetrics.designUnitsPerEm);
-
-                safeRelease (&pFontFace);
-                safeRelease (&pFont);
-                safeRelease (&pFontFamily);
-
-                pTextLayout->SetFontSize(emSize, range);
+                // To add a brush, we need to create a D2D render target
+                // Since we are not actually rendering to a D2D context we create a temporary GDI render target
+                ID2D1Factory *pD2DFactory = nullptr;
+                D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &pD2DFactory);
+                D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+                    D2D1_RENDER_TARGET_TYPE_DEFAULT,
+                    D2D1::PixelFormat(
+                    DXGI_FORMAT_B8G8R8A8_UNORM,
+                    D2D1_ALPHA_MODE_IGNORE),
+                    0,
+                    0,
+                    D2D1_RENDER_TARGET_USAGE_NONE,
+                    D2D1_FEATURE_LEVEL_DEFAULT
+                    );
+                ID2D1DCRenderTarget* pDCRT = nullptr;
+                pD2DFactory->CreateDCRenderTarget(&props, &pDCRT);
+                ID2D1SolidColorBrush* pBrush = nullptr;
+                pDCRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(attrColour->colour.getFloatRed(),
+                    attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(),
+                    attrColour->colour.getFloatAlpha())), &pBrush);
+                // We need to call SetDrawingEffect with a legimate brush to get DirectWrite to break text based on colours
+                pTextLayout->SetDrawingEffect(pBrush, range);
+                safeRelease (&pBrush);
+                safeRelease (&pDCRT);
+                safeRelease (&pD2DFactory);
             }
         }
+
+        UINT32 actualLineCount = 0;
+        pTextLayout->GetLineMetrics(nullptr, 0, &actualLineCount);
+        // Preallocate GlyphLayout Line Array
+        glyphLayout.setNumLines(actualLineCount);
+        DWRITE_LINE_METRICS* lineMetrics = new DWRITE_LINE_METRICS[actualLineCount];
+        pTextLayout->GetLineMetrics(lineMetrics, actualLineCount, &actualLineCount);
+        int location = 0;
+        for (UINT32 i = 0; i < actualLineCount; ++i)
+        {
+            // Get string range
+            Range<int> lineStringRange(location, (int) location + lineMetrics[i].length);
+            location = lineMetrics[i].length;
+            GlyphLine* glyphLine = new GlyphLine();
+            glyphLine->setStringRange(lineStringRange);
+            glyphLayout.addGlyphLine(glyphLine);
+        }
+        delete [] lineMetrics;
 
         // TODO: Change to CustomTextRender
         IDWriteTextRenderer* pTextRenderer = nullptr;
@@ -177,5 +179,6 @@ private:
 
 TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
 {
-    return new SimpleTypeLayout();
+    return new DirectWriteTypeLayout();
+    //return new SimpleTypeLayout();
 }
