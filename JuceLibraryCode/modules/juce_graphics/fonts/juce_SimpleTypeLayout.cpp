@@ -311,6 +311,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
             RunAttribute attribute;
             attribute.range.setStart(rangeStart);
             attribute.range.setEnd(i);
+            if (i + 1 == stringLength) attribute.range.setEnd(i+1);
             attribute.font = charAttributes[i-1].font;
             attribute.colour = charAttributes[i-1].colour;
             runAttributes.add(attribute);
@@ -362,13 +363,13 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
             glyphRun->addGlyph (glyph);
             charPosition++;
         }
+        if (t->isWhitespace || t->isNewLine) ++charPosition;
         // We have reached the end of a token, we may need to create a new run or line
         if (i + 1 == tokens.size())
         {
             // We have reached the last token
             // Close GlyphRun
-            // charPosition has already been incremented to point to the first character in the next token
-            Range<int> runRange (runStartPosition, charPosition - 1);
+            Range<int> runRange (runStartPosition, charPosition);
             glyphRun->setStringRange (runRange);
             glyphRun->setFont (t->font);
             glyphRun->setColour (t->colour);
@@ -376,7 +377,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
             if (t->font.getDescent() > glyphLine->getDescent()) glyphLine->setDescent (t->font.getDescent());
             glyphLine->addGlyphRun (glyphRun);
             // Close GlyphLine
-            Range<int> lineRange (lineStartPosition, charPosition - 1);
+            Range<int> lineRange (lineStartPosition, charPosition);
             glyphLine->setStringRange (lineRange);
             glyphLayout.addGlyphLine (glyphLine);
         }
@@ -388,8 +389,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
             {
                 //The next token has a new font or new colour
                 // Close GlyphRun
-                // charPosition has already been incremented to point to the first character in the next token
-                Range<int> runRange (runStartPosition, charPosition - 1);
+                Range<int> runRange (runStartPosition, charPosition);
                 glyphRun->setStringRange (runRange);
                 glyphRun->setFont (t->font);
                 glyphRun->setColour (t->colour);
@@ -404,8 +404,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
             {
                 // The next token is in a new line
                 // Close GlyphRun
-                // charPosition has already been incremented to point to the first character in the next token
-                Range<int> runRange (runStartPosition, charPosition - 1);
+                Range<int> runRange (runStartPosition, charPosition);
                 glyphRun->setStringRange (runRange);
                 glyphRun->setFont(t->font);
                 glyphRun->setColour (t->colour);
@@ -413,7 +412,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
                 if (t->font.getDescent() > glyphLine->getDescent()) glyphLine->setDescent (t->font.getDescent());
                 glyphLine->addGlyphRun (glyphRun);
                 // Close GlyphLine
-                Range<int> lineRange (lineStartPosition, charPosition - 1);
+                Range<int> lineRange (lineStartPosition, charPosition);
                 glyphLine->setStringRange (lineRange);
                 glyphLayout.addGlyphLine (glyphLine);
                 // Create the next GlyphLine and GlyphRun
