@@ -51,11 +51,6 @@ IFACEMETHODIMP CustomTextRenderer::DrawGlyphRun(
     IUnknown* clientDrawingEffect
     )
 {
-    /*if (currentRun < 5)
-    {
-        Logger::outputDebugString("Run: " + String(currentRun));
-        Logger::outputDebugString("baselineOriginX: " + String(baselineOriginX));
-    }*/
     GlyphLayout* glyphLayout = static_cast<GlyphLayout*>(clientDrawingContext);
     // Check if this is a new line
     if (baselineOriginY != lastOriginY)
