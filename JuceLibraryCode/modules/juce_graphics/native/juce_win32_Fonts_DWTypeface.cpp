@@ -162,7 +162,11 @@ public:
         ascent = std::abs ((float) fontMetrics.ascent);
         const float totalSize = ascent + std::abs ((float) fontMetrics.descent);
         ascent /= totalSize;
-        emSize = 1.0f / (totalSize / designUnitsPerEm);
+        unitsToHeightScaleFactor = 1.0f / (totalSize / designUnitsPerEm);
+        const float pathAscent = (((float) fontMetrics.ascent) / ((float) designUnitsPerEm)) * 1024.0f;
+        const float pathDescent = (((float) fontMetrics.descent) / ((float) designUnitsPerEm)) * 1024.0f;
+        const float pathTotalSize = std::abs (pathAscent) + std::abs (pathDescent);
+        pathTransform = AffineTransform::identity.scale (1.0f / pathTotalSize, 1.0f / pathTotalSize);
 
         safeRelease (&pFont);
         safeRelease (&pFontFamily);
@@ -192,7 +196,7 @@ public:
         {
             x += (float) glyphMetrics[i].advanceWidth / designUnitsPerEm;
         }
-        x *= emSize;
+        x *= unitsToHeightScaleFactor;
         delete [] glyphMetrics;
         delete [] glyphIndicies;
         return x;
@@ -212,7 +216,7 @@ public:
         for (size_t i = 0; i < textUTF32.length(); ++i)
         {
             x += (float) glyphMetrics[i].advanceWidth / designUnitsPerEm;
-            xOffsets.add (x * emSize);
+            xOffsets.add (x * unitsToHeightScaleFactor);
             resultGlyphs.add (glyphIndicies[i]);
         }
         delete [] glyphMetrics;
@@ -236,7 +240,7 @@ public:
         UINT16 glyphIndex = (UINT16) glyphNumber;
         PathGeometrySink* pPathGeometrySink = nullptr;
         pPathGeometrySink = new PathGeometrySink();
-        pFontFace->GetGlyphRunOutline (emSize, &glyphIndex, nullptr, nullptr, 1, false, false, pPathGeometrySink);
+        pFontFace->GetGlyphRunOutline (1024.0f, &glyphIndex, nullptr, nullptr, 1, false, false, pPathGeometrySink);
         path = pPathGeometrySink->getPath();
         if (!pathTransform.isIdentity())
             path.applyTransform (pathTransform);
@@ -247,7 +251,7 @@ public:
 
 private:
     IDWriteFontFace* pFontFace;
-    float emSize;
+    float unitsToHeightScaleFactor;
     float ascent;
     int designUnitsPerEm;
     AffineTransform pathTransform;
