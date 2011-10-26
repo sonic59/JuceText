@@ -23,6 +23,8 @@
   ==============================================================================
 */
 
+#include "juce_win32_Fonts_DWTextRenderer.h"
+
 class DirectWriteTypeLayout : public TypeLayout
 {
 public:
@@ -38,6 +40,7 @@ public:
         hr = pDWriteFactory->GetSystemFontCollection(&pFontCollection);
 
         Font defaultFont;
+        const float defaultFontHeightToEmSizeFactor = getFontHeightToEmSizeFactor(defaultFont, *pFontCollection);
         String localeName("en-us");
 
         IDWriteTextFormat* pTextFormat = nullptr;
@@ -47,7 +50,7 @@ public:
             DWRITE_FONT_WEIGHT_REGULAR,
             DWRITE_FONT_STYLE_NORMAL,
             DWRITE_FONT_STRETCH_NORMAL,
-            defaultFont.getHeight(),
+            defaultFont.getHeight() * defaultFontHeightToEmSizeFactor,
             localeName.toWideCharPointer(),
             &pTextFormat
             );
@@ -90,7 +93,8 @@ public:
                 range.startPosition = attrFont->range.getStart();
                 range.length = attrFont->range.getLength();
                 pTextLayout->SetFontFamilyName(attrFont->font.getTypefaceName().toWideCharPointer(), range);
-                pTextLayout->SetFontSize(attrFont->font.getHeight(), range);
+                const float fontHeightToEmSizeFactor = getFontHeightToEmSizeFactor(attrFont->font, *pFontCollection);
+                pTextLayout->SetFontSize(attrFont->font.getHeight() * fontHeightToEmSizeFactor, range);
             }
             if (attr->attribute == Attr::foregroundColour)
             {
@@ -145,9 +149,8 @@ public:
         }
         delete [] lineMetrics;
 
-        // TODO: Change to CustomTextRender
-        IDWriteTextRenderer* pTextRenderer = nullptr;
-        // TODO: pTextRenderer = new CustomTextRender();
+        CustomTextRenderer* pTextRenderer = nullptr;
+        pTextRenderer = new CustomTextRenderer();
         hr = pTextLayout->Draw(
             &glyphLayout,
             pTextRenderer,
@@ -163,6 +166,35 @@ public:
     }
 
 private:
+
+    const float getFontHeightToEmSizeFactor(Font& font, IDWriteFontCollection& pFontCollection)
+    {
+        // To set the font size, we need to get the font metrics
+        BOOL fontFound;
+        uint32 fontIndex;
+
+        pFontCollection.FindFamilyName (font.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
+        if (!fontFound) fontIndex = 0;
+
+        IDWriteFontFamily* pFontFamily = nullptr;
+        pFontCollection.GetFontFamily (fontIndex, &pFontFamily);
+
+        IDWriteFont* pFont = nullptr;
+        pFontFamily->GetFirstMatchingFont (DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &pFont);
+        IDWriteFontFace* pFontFace = nullptr;
+        pFont->CreateFontFace (&pFontFace);
+
+        DWRITE_FONT_METRICS fontMetrics;
+        pFontFace->GetMetrics(&fontMetrics);
+        const float totalHeight = std::abs ((float) fontMetrics.ascent) + std::abs ((float) fontMetrics.descent);
+        const float fontHeightToEmSizeFactor = (float) fontMetrics.designUnitsPerEm / totalHeight;
+
+        safeRelease (&pFontFace);
+        safeRelease (&pFont);
+        safeRelease (&pFontFamily);
+
+        return fontHeightToEmSizeFactor;
+    }
 
     // safeRelease inline function.
     template <class T> inline void safeRelease (T **ppT)

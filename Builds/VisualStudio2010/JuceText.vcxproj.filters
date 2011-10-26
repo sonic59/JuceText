@@ -1011,6 +1011,9 @@
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_graphics\native\juce_win32_Fonts_DWTypeLayout.cpp">
       <Filter>Juce Modules\juce_graphics\native</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_graphics\native\juce_win32_Fonts_DWTextRenderer.cpp">
+      <Filter>Juce Modules\juce_graphics\native</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\MainWindow.h">
@@ -1954,6 +1957,9 @@
     </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\modules\juce_graphics\fonts\juce_TypeLayout.h">
       <Filter>Juce Modules\juce_graphics\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_graphics\native\juce_win32_Fonts_DWTextRenderer.h">
+      <Filter>Juce Modules\juce_graphics\native</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
