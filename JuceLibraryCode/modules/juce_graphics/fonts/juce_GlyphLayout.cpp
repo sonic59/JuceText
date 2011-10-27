@@ -25,7 +25,7 @@
 
 BEGIN_JUCE_NAMESPACE
 
-Glyph::Glyph (const int glyphCode_, const float lineXOffset_, const float lineYOffset_) : glyphCode(glyphCode_), lineXOffset(lineXOffset_), lineYOffset(lineYOffset_)
+Glyph::Glyph (const int glyphCode_, const float x_, const float y_) : glyphCode(glyphCode_), x(x_), y(y_)
 {
 }
 
@@ -38,14 +38,14 @@ int Glyph::getGlyphCode() const
     return glyphCode;
 }
 
-float Glyph::getLineXOffset() const
+float Glyph::getX() const
 {
-    return lineXOffset;
+    return x;
 }
 
-float Glyph::getLineYOffset() const
+float Glyph::getY() const
 {
-    return lineYOffset;
+    return y;
 }
 
 //==============================================================================
@@ -255,7 +255,6 @@ void GlyphLayout::draw (const Graphics& g) const
     for (int i = 0; i < getNumLines(); ++i)
     {
         GlyphLine& glyphLine = getGlyphLine(i);
-        Point<float> lineOrigin = glyphLine.getLineOrigin();
         for (int j = 0; j < glyphLine.getNumRuns(); ++j)
         {
             GlyphRun& glyphRun = glyphLine.getGlyphRun(j);
@@ -265,8 +264,8 @@ void GlyphLayout::draw (const Graphics& g) const
             {
                 Glyph& glyph = glyphRun.getGlyph(k);
                 context->drawGlyph (glyph.getGlyphCode(),
-                                    AffineTransform::translation (getX() + lineOrigin.getX() + glyph.getLineXOffset(),
-                                                                  getY() + lineOrigin.getY() + glyph.getLineYOffset()));
+                                    AffineTransform::translation (glyph.getX(),
+                                                                  glyph.getY()));
             }
         }
     }

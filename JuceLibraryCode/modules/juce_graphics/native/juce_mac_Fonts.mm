@@ -238,7 +238,9 @@ public:
                     for (CFIndex k = 0; k < numGlyphs; ++k)
                     {
                         //The glyph positions in a run are relative to the origin of the line containing the run
-                        Glyph* glyph = new Glyph(glyphsPtr[k], (float) posPtr[k].x, (float) posPtr[k].y);
+                        float xPos = glyphLayout.getX() + glyphLine->getLineOrigin().getX() + (float) posPtr[k].x;
+                        float yPos = glyphLayout.getY() + glyphLine->getLineOrigin().getY() + (float) posPtr[k].y;
+                        Glyph* glyph = new Glyph(glyphsPtr[k], xPos, yPos);
                         glyphRun->addGlyph(glyph);
                     }
                 }
@@ -251,7 +253,9 @@ public:
                     CTRunGetPositions (run, CFRangeMake (0, 0), positionBuffer);
                     for (CFIndex k = 0; k < numGlyphs; ++k)
                     {
-                        Glyph* glyph = new Glyph(glyphBuffer[k], (float) positionBuffer[k].x, (float) positionBuffer[k].y);
+                        float xPos = glyphLayout.getX() + glyphLine->getLineOrigin().getX() + (float) positionBuffer[k].x;
+                        float yPos = glyphLayout.getY() + glyphLine->getLineOrigin().getY() + (float) positionBuffer[k].y;
+                        Glyph* glyph = new Glyph(glyphBuffer[k], xPos, yPos);
                         glyphRun->addGlyph(glyph);
                     }
                 }

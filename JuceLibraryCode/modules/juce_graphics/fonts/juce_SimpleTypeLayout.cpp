@@ -341,7 +341,7 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
         const Token* const t = tokens.getUnchecked(i);
         // See TextLayout::draw
         const float xOffset = (float) t->x;
-        const float yOffset =(float)  t->y;
+        const float yOffset = (float) t->y;
         // See GlyphArrangement::addCurtailedLineOfText
         Array <int> newGlyphs;
         Array <float> xOffsets;
@@ -359,7 +359,9 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
                 Point<float> origin (xOffset, yOffset + t->font.getAscent());
                 glyphLine->setLineOrigin (origin);
             }
-            Glyph* glyph = new Glyph (newGlyphs.getUnchecked(j), xOffset + thisX, 0.0f);
+            float xPos = glyphLayout.getX() + glyphLine->getLineOrigin().getX() + xOffset + thisX;
+            float yPos = glyphLayout.getY() + glyphLine->getLineOrigin().getY();
+            Glyph* glyph = new Glyph (newGlyphs.getUnchecked(j), xPos, yPos);
             glyphRun->addGlyph (glyph);
             charPosition++;
         }

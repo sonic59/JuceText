@@ -32,17 +32,17 @@
 class JUCE_API  Glyph
 {
 public:
-    Glyph(const int glyphCode, const float lineXOffset, const float lineYOffset);
+    Glyph(const int glyphCode, const float x, const float y);
     ~Glyph();
 
     int getGlyphCode() const;
-    float getLineXOffset() const;
-    float getLineYOffset() const;
+    float getX() const;
+    float getY() const;
 
 private:
     int glyphCode;
-    float lineXOffset;
-    float lineYOffset;
+    float x;
+    float y;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Glyph);
 };
 

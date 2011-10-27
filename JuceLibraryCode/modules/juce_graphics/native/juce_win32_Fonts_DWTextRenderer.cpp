@@ -123,12 +123,13 @@ IFACEMETHODIMP CustomTextRenderer::DrawGlyphRun(
     }
     glyphRunLayout->setColour(runColour);
     // Add Individual Glyph Data
-    float xOffset = baselineOriginX - glyphLayout->getX() - glyphLine.getLineOrigin().getX();
+    float xOffset = baselineOriginX;
     for (UINT32 i = 0; i < glyphRun->glyphCount; ++i)
     {
-        Glyph* glyph = new Glyph(glyphRun->glyphIndices[i], xOffset, 0.0f);
+        if (glyphRun->bidiLevel % 2 == 1) xOffset -= glyphRun->glyphAdvances[i];
+        Glyph* glyph = new Glyph(glyphRun->glyphIndices[i], xOffset, baselineOriginY);
         glyphRunLayout->addGlyph(glyph);
-        xOffset += glyphRun->glyphAdvances[i];
+        if (glyphRun->bidiLevel % 2 == 0) xOffset += glyphRun->glyphAdvances[i];
     }
     
     glyphLine.addGlyphRun(glyphRunLayout);
