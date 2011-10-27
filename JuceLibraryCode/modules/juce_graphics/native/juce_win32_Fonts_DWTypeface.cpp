@@ -23,6 +23,9 @@
   ==============================================================================
 */
 
+// This subclass is necessary since there is no way to retrieve path data from a
+// statndard IDWriteGeometrySink. This class stores the path data as a JUCE
+// path which we are easily able to access as required for rendering a glyph.
 class PathGeometrySink : public IDWriteGeometrySink
 {
     public:
@@ -43,15 +46,15 @@ class PathGeometrySink : public IDWriteGeometrySink
 
         STDMETHOD_(ULONG, Release)(THIS)
         {
-            ULONG cRef = static_cast<ULONG>(
+            ULONG localRefCount = static_cast<ULONG>(
             InterlockedDecrement(reinterpret_cast<LONG volatile *>(&refCount)));
 
-            if(0 == cRef)
+            if(0 == localRefCount)
             {
                 delete this;
             }
 
-            return cRef;
+            return localRefCount;
         }
 
         STDMETHOD(QueryInterface)(THIS_ REFIID iid, void** ppvObject)
@@ -137,29 +140,36 @@ public:
         : Typeface (font.getTypefaceName()),
           ascent (0.0f)
     {
+        // Create a DirectWrite Factory Object
         IDWriteFactory* dwFactory = nullptr;
         HRESULT hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
             reinterpret_cast<IUnknown**>(&dwFactory));
 
+        // Access the OS Font Collection
         IDWriteFontCollection* dwFontCollection = nullptr;
         hr = dwFactory->GetSystemFontCollection(&dwFontCollection);
         BOOL fontFound;
         uint32 fontIndex;
+        // Find a font in the OS Font Collection through searching by font name
         hr = dwFontCollection->FindFamilyName (font.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
         if (! fontFound)
             fontIndex = 0;
-
+        // Get the font family using the search results
+        // Fonts like: Times New Roman, Times New Roman Bold, Times New Roman Italic are all in the same font family
         IDWriteFontFamily* dwFontFamily = nullptr;
         hr = dwFontCollection->GetFontFamily (fontIndex, &dwFontFamily);
-
+        // Get a specific font in the font family using certain weight and style flags
         IDWriteFont* dwFont = nullptr;
         DWRITE_FONT_WEIGHT dwWeight = font.isBold() ? DWRITE_FONT_WEIGHT_BOLD  : DWRITE_FONT_WEIGHT_NORMAL;
         DWRITE_FONT_STYLE dwStyle = font.isItalic() ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
         hr = dwFontFamily->GetFirstMatchingFont (dwWeight, DWRITE_FONT_STRETCH_NORMAL, dwStyle, &dwFont);
+        // Get the font face for the font
         hr = dwFont->CreateFontFace (&dwFontFace);
-
+        // Obtain the font metrics so we can properly calculate scaling factors
         DWRITE_FONT_METRICS dwFontMetrics;
         dwFontFace->GetMetrics(&dwFontMetrics);
+        // All Font Metrics are in design units so we need to get designUnitsPerEm value to get the metrics
+        // into Em/Design Independent Pixels
         designUnitsPerEm = dwFontMetrics.designUnitsPerEm;
         ascent = std::abs ((float) dwFontMetrics.ascent);
         const float totalSize = ascent + std::abs ((float) dwFontMetrics.descent);
@@ -187,13 +197,14 @@ public:
     float getStringWidth (const String& text)
     {
         float x = 0;
-        // GetGlyphIndices works with UCS4 Code Points
+        // Text may not be in UTF32 encoding so we convert it first
         CharPointer_UTF32 textUTF32 = text.toUTF32();
         HeapBlock <UINT16> glyphIndicies (textUTF32.length());
+        // GetGlyphIndices works with UCS4 Code Points (UTF32)
         dwFontFace->GetGlyphIndices (textUTF32, textUTF32.length(), glyphIndicies);
         HeapBlock <DWRITE_GLYPH_METRICS> dwGlyphMetrics (textUTF32.length());
-        // dwGlyphMetrics in font design units
         dwFontFace->GetDesignGlyphMetrics (glyphIndicies, textUTF32.length(), dwGlyphMetrics, false);
+        // dwGlyphMetrics is in font design units
         for (size_t i = 0; i < textUTF32.length(); ++i)
         {
             x += (float) dwGlyphMetrics[i].advanceWidth / designUnitsPerEm;
@@ -206,13 +217,14 @@ public:
     {
         xOffsets.add (0);
         float x = 0;
-        // GetGlyphIndices works with UCS4 Code Points
+        // Text may not be in UTF32 encoding so we convert it first
         CharPointer_UTF32 textUTF32 = text.toUTF32();
         HeapBlock <UINT16> glyphIndicies (textUTF32.length());
+        // GetGlyphIndices works with UCS4 Code Points (UTF32)
         dwFontFace->GetGlyphIndices (textUTF32, textUTF32.length(), glyphIndicies);
         HeapBlock <DWRITE_GLYPH_METRICS> dwGlyphMetrics (textUTF32.length());
-        // dwGlyphMetrics in font design units
         dwFontFace->GetDesignGlyphMetrics (glyphIndicies, textUTF32.length(), dwGlyphMetrics, false);
+        // dwGlyphMetrics is in font design units
         for (size_t i = 0; i < textUTF32.length(); ++i)
         {
             x += (float) dwGlyphMetrics[i].advanceWidth / designUnitsPerEm;
@@ -238,6 +250,7 @@ public:
         UINT16 glyphIndex = (UINT16) glyphNumber;
         PathGeometrySink* pathGeometrySink = nullptr;
         pathGeometrySink = new PathGeometrySink();
+        // Create path from single glyph
         dwFontFace->GetGlyphRunOutline (1024.0f, &glyphIndex, nullptr, nullptr, 1, false, false, pathGeometrySink);
         path = pathGeometrySink->getPath();
         if (!pathTransform.isIdentity())
