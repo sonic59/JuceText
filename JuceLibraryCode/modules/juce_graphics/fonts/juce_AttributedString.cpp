@@ -26,11 +26,20 @@
 BEGIN_JUCE_NAMESPACE
 
 //==============================================================================
-AttributedString::AttributedString() : text(""), lineSpacing(0.0f), textAlignment(AttributedString::left), wordWrap(AttributedString::byWord), readingDirection(AttributedString::natural)
+AttributedString::AttributedString()
+    : text(""),
+      lineSpacing(0.0f),
+      textAlignment(AttributedString::left),
+      wordWrap(AttributedString::byWord),
+      readingDirection(AttributedString::natural)
 {
 }
 
-AttributedString::AttributedString (const String& other) : text(other), lineSpacing(0.0f), textAlignment(AttributedString::left), wordWrap(AttributedString::byWord)
+AttributedString::AttributedString (const String& newString)
+    : text(newString),
+      lineSpacing(0.0f),
+      textAlignment(AttributedString::left),
+      wordWrap(AttributedString::byWord)
 {
 }
 
@@ -53,9 +62,9 @@ AttributedString::TextAlignment AttributedString::getTextAlignment() const
     return textAlignment;
 }
 
-void AttributedString::setTextAlignment(const TextAlignment& other)
+void AttributedString::setTextAlignment(const TextAlignment& newTextAlignment)
 {
-    textAlignment = other;
+    textAlignment = newTextAlignment;
 }
 
 AttributedString::WordWrap AttributedString::getWordWrap() const
@@ -63,9 +72,9 @@ AttributedString::WordWrap AttributedString::getWordWrap() const
     return wordWrap;
 }
 
-void AttributedString::setWordWrap(const WordWrap& other)
+void AttributedString::setWordWrap(const WordWrap& newWordWrap)
 {
-    wordWrap = other;
+    wordWrap = newWordWrap;
 }
 
 AttributedString::ReadingDirection AttributedString::getReadingDirection() const
@@ -73,9 +82,9 @@ AttributedString::ReadingDirection AttributedString::getReadingDirection() const
     return readingDirection;
 }
 
-void AttributedString::setReadingDirection(const ReadingDirection& other)
+void AttributedString::setReadingDirection(const ReadingDirection& newReadingDirection)
 {
-    readingDirection = other;
+    readingDirection = newReadingDirection;
 }
 
 float AttributedString::getLineSpacing() const
@@ -83,9 +92,9 @@ float AttributedString::getLineSpacing() const
     return lineSpacing;
 }
 
-void AttributedString::setLineSpacing(const float& other)
+void AttributedString::setLineSpacing(const float& newLineSpacing)
 {
-    lineSpacing = other;
+    lineSpacing = newLineSpacing;
 }
 
 int AttributedString::getCharAttributesSize() const
@@ -93,12 +102,12 @@ int AttributedString::getCharAttributesSize() const
     return charAttributes.size();
 }
 
-Attr* AttributedString::getCharAttribute(const int index) const
+Attr* AttributedString::getCharAttribute(const int& index) const
 {
     return charAttributes[index];
 }
 
-void AttributedString::setForegroundColour(int start, int end, const Colour& colour)
+void AttributedString::setForegroundColour(const int& start, const int& end, const Colour& colour)
 {
     Range<int> range(start, end);
     AttrColour* attrColour = new AttrColour();
@@ -109,7 +118,7 @@ void AttributedString::setForegroundColour(int start, int end, const Colour& col
     charAttributes.add(attr);
 }
 
-void AttributedString::setFont(int start, int end, const Font& font)
+void AttributedString::setFont(const int& start, const int& end, const Font& font)
 {
     Range<int> range(start, end);
     AttrFont* attrFont = new AttrFont();

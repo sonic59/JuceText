@@ -107,7 +107,7 @@ class JUCE_API  AttributedString
 {
 public:
     AttributedString ();
-    AttributedString (const String& other);
+    AttributedString (const String& newString);
     ~AttributedString();
 
     enum TextAlignment
@@ -133,25 +133,25 @@ public:
     };
 
     String getText() const;
-    void setText(const String& other);
+    void setText(const String& newText);
 
     TextAlignment getTextAlignment() const;
-    void setTextAlignment(const TextAlignment& other);
+    void setTextAlignment(const TextAlignment& newTextAlignment);
 
     WordWrap getWordWrap() const;
-    void setWordWrap(const WordWrap& other);
+    void setWordWrap(const WordWrap& newWordWrap);
 
     ReadingDirection getReadingDirection() const;
-    void setReadingDirection(const ReadingDirection& other);
+    void setReadingDirection(const ReadingDirection& newReadingDirection);
 
     float getLineSpacing() const;
-    void setLineSpacing(const float& other);
+    void setLineSpacing(const float& newLineSpacing);
 
     int getCharAttributesSize() const;
-    Attr* getCharAttribute(const int index) const;
+    Attr* getCharAttribute(const int& index) const;
 
-    void setForegroundColour(int start, int end, const Colour& colour);
-    void setFont(int start, int end, const Font& font);
+    void setForegroundColour(const int& start, const int& end, const Colour& colour);
+    void setFont(const int& start, const int& end, const Font& font);
 
 private:
     String text;
