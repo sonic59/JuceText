@@ -80,6 +80,22 @@ public:
             &pTextLayout
             );
 
+        // To add color to text, we need to create a D2D render target
+        // Since we are not actually rendering to a D2D context we create a temporary GDI render target
+        ID2D1Factory *pD2DFactory = nullptr;
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &pD2DFactory);
+        D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+            D2D1_RENDER_TARGET_TYPE_SOFTWARE,
+            D2D1::PixelFormat(
+            DXGI_FORMAT_B8G8R8A8_UNORM,
+            D2D1_ALPHA_MODE_IGNORE),
+            0,
+            0,
+            D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE,
+            D2D1_FEATURE_LEVEL_DEFAULT
+            );
+        ID2D1DCRenderTarget* pDCRT = nullptr;
+        pD2DFactory->CreateDCRenderTarget(&props, &pDCRT);
         // Character Attributes
         int numCharacterAttributes = text.getCharAttributesSize();
         for (int i = 0; i < numCharacterAttributes; ++i)
@@ -105,22 +121,6 @@ public:
                 range.startPosition = attrColour->range.getStart();
                 range.length = attrColour->range.getLength();
 
-                // To add a brush, we need to create a D2D render target
-                // Since we are not actually rendering to a D2D context we create a temporary GDI render target
-                ID2D1Factory *pD2DFactory = nullptr;
-                D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &pD2DFactory);
-                D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
-                    D2D1_RENDER_TARGET_TYPE_DEFAULT,
-                    D2D1::PixelFormat(
-                    DXGI_FORMAT_B8G8R8A8_UNORM,
-                    D2D1_ALPHA_MODE_IGNORE),
-                    0,
-                    0,
-                    D2D1_RENDER_TARGET_USAGE_NONE,
-                    D2D1_FEATURE_LEVEL_DEFAULT
-                    );
-                ID2D1DCRenderTarget* pDCRT = nullptr;
-                pD2DFactory->CreateDCRenderTarget(&props, &pDCRT);
                 ID2D1SolidColorBrush* pBrush = nullptr;
                 pDCRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(attrColour->colour.getFloatRed(),
                     attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(),
@@ -128,10 +128,10 @@ public:
                 // We need to call SetDrawingEffect with a legimate brush to get DirectWrite to break text based on colours
                 pTextLayout->SetDrawingEffect(pBrush, range);
                 safeRelease (&pBrush);
-                safeRelease (&pDCRT);
-                safeRelease (&pD2DFactory);
             }
         }
+        safeRelease (&pDCRT);
+        safeRelease (&pD2DFactory);
 
         UINT32 actualLineCount = 0;
         pTextLayout->GetLineMetrics(nullptr, 0, &actualLineCount);
