@@ -80,7 +80,7 @@ class JUCE_API  GlyphLine
 public:
     GlyphLine();
     GlyphLine (const int& numRuns, const Range<int>& stringRange,
-               const Point<float>& lineOrigin,const float& ascent,
+               const Point<float>& lineOrigin, const float& ascent,
                const float& descent, const float& leading);
     ~GlyphLine();
 
