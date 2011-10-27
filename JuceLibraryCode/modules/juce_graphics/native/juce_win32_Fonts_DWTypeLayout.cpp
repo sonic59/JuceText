@@ -32,59 +32,68 @@ public:
 
     void getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout)
     {
-        IDWriteFactory* pDWriteFactory = nullptr;
+        IDWriteFactory* dwFactory = nullptr;
         HRESULT hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-            reinterpret_cast<IUnknown**>(&pDWriteFactory));
+            reinterpret_cast<IUnknown**>(&dwFactory));
 
-        IDWriteFontCollection* pFontCollection = nullptr;
-        hr = pDWriteFactory->GetSystemFontCollection(&pFontCollection);
+        IDWriteFontCollection* dwFontCollection = nullptr;
+        hr = dwFactory->GetSystemFontCollection (&dwFontCollection);
 
         Font defaultFont;
-        const float defaultFontHeightToEmSizeFactor = getFontHeightToEmSizeFactor(defaultFont, *pFontCollection);
+        const float defaultFontHeightToEmSizeFactor = getFontHeightToEmSizeFactor (defaultFont, *dwFontCollection);
         String localeName("en-us");
 
-        IDWriteTextFormat* pTextFormat = nullptr;
-        hr = pDWriteFactory->CreateTextFormat(
+        IDWriteTextFormat* dwTextFormat = nullptr;
+        hr = dwFactory->CreateTextFormat (
             defaultFont.getTypefaceName().toWideCharPointer(),
-            pFontCollection,
+            dwFontCollection,
             DWRITE_FONT_WEIGHT_REGULAR,
             DWRITE_FONT_STYLE_NORMAL,
             DWRITE_FONT_STRETCH_NORMAL,
             defaultFont.getHeight() * defaultFontHeightToEmSizeFactor,
             localeName.toWideCharPointer(),
-            &pTextFormat
+            &dwTextFormat
             );
 
         // Paragraph Attributes
         // Set Paragraph Alignment
-        if (text.getTextAlignment() == AttributedString::left) pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-        if (text.getTextAlignment() == AttributedString::right) pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
-        if (text.getTextAlignment() == AttributedString::center) pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+        if (text.getTextAlignment() == AttributedString::left)
+            dwTextFormat->SetTextAlignment (DWRITE_TEXT_ALIGNMENT_LEADING);
+        if (text.getTextAlignment() == AttributedString::right)
+            dwTextFormat->SetTextAlignment (DWRITE_TEXT_ALIGNMENT_TRAILING);
+        if (text.getTextAlignment() == AttributedString::center)
+            dwTextFormat->SetTextAlignment (DWRITE_TEXT_ALIGNMENT_CENTER);
         // DirectWrite cannot justify text, default to left alignment
-        if (text.getTextAlignment() == AttributedString::justified) pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+        if (text.getTextAlignment() == AttributedString::justified)
+            dwTextFormat->SetTextAlignment (DWRITE_TEXT_ALIGNMENT_LEADING);
         // Set Word Wrap
-        if (text.getWordWrap() == AttributedString::none) pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
-        if (text.getWordWrap() == AttributedString::byWord) pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
+        if (text.getWordWrap() == AttributedString::none)
+            dwTextFormat->SetWordWrapping (DWRITE_WORD_WRAPPING_NO_WRAP);
+        if (text.getWordWrap() == AttributedString::byWord)
+            dwTextFormat->SetWordWrapping (DWRITE_WORD_WRAPPING_WRAP);
         // DirectWrite does not support wrapping by character, default to wrapping by word
-        if (text.getWordWrap() == AttributedString::byChar) pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
+        if (text.getWordWrap() == AttributedString::byChar)
+            dwTextFormat->SetWordWrapping (DWRITE_WORD_WRAPPING_WRAP);
         // DirectWrite does not automatically set reading direction
-        if (text.getReadingDirection() == AttributedString::rightToLeft) pTextFormat->SetReadingDirection(DWRITE_READING_DIRECTION_RIGHT_TO_LEFT);
+        // This must be set correctly and manually when using RTL Scripts (Hebrew, Arabic)
+        if (text.getReadingDirection() == AttributedString::rightToLeft)
+            dwTextFormat->SetReadingDirection(DWRITE_READING_DIRECTION_RIGHT_TO_LEFT);
 
-        IDWriteTextLayout* pTextLayout = nullptr;
-        hr = pDWriteFactory->CreateTextLayout(
+        IDWriteTextLayout* dwTextLayout = nullptr;
+        hr = dwFactory->CreateTextLayout (
             text.getText().toWideCharPointer(),
             text.getText().length(),
-            pTextFormat,
+            dwTextFormat,
             glyphLayout.getWidth(),
             glyphLayout.getHeight(),
-            &pTextLayout
+            &dwTextLayout
             );
 
         // To add color to text, we need to create a D2D render target
         // Since we are not actually rendering to a D2D context we create a temporary GDI render target
-        ID2D1Factory *pD2DFactory = nullptr;
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &pD2DFactory);
-        D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+        ID2D1Factory *d2dFactory = nullptr;
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
+        D2D1_RENDER_TARGET_PROPERTIES d2dRTProp = D2D1::RenderTargetProperties(
             D2D1_RENDER_TARGET_TYPE_SOFTWARE,
             D2D1::PixelFormat(
             DXGI_FORMAT_B8G8R8A8_UNORM,
@@ -94,106 +103,106 @@ public:
             D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE,
             D2D1_FEATURE_LEVEL_DEFAULT
             );
-        ID2D1DCRenderTarget* pDCRT = nullptr;
-        pD2DFactory->CreateDCRenderTarget(&props, &pDCRT);
+        ID2D1DCRenderTarget* d2dDCRT = nullptr;
+        d2dFactory->CreateDCRenderTarget(&d2dRTProp, &d2dDCRT);
         // Character Attributes
         int numCharacterAttributes = text.getCharAttributesSize();
         for (int i = 0; i < numCharacterAttributes; ++i)
         {
-            Attr* attr = text.getCharAttribute(i);
+            Attr* attr = text.getCharAttribute (i);
             // Character Range Error Checking
             if (attr->range.getStart() > text.getText().length()) continue;
-            if (attr->range.getEnd() > text.getText().length()) attr->range.setEnd(text.getText().length());
+            if (attr->range.getEnd() > text.getText().length()) attr->range.setEnd (text.getText().length());
             if (attr->attribute == Attr::font)
             {
                 AttrFont* attrFont = static_cast<AttrFont*>(attr);
-                DWRITE_TEXT_RANGE range;
-                range.startPosition = attrFont->range.getStart();
-                range.length = attrFont->range.getLength();
-                pTextLayout->SetFontFamilyName(attrFont->font.getTypefaceName().toWideCharPointer(), range);
-                const float fontHeightToEmSizeFactor = getFontHeightToEmSizeFactor(attrFont->font, *pFontCollection);
-                pTextLayout->SetFontSize(attrFont->font.getHeight() * fontHeightToEmSizeFactor, range);
+                DWRITE_TEXT_RANGE dwRange;
+                dwRange.startPosition = attrFont->range.getStart();
+                dwRange.length = attrFont->range.getLength();
+                dwTextLayout->SetFontFamilyName(attrFont->font.getTypefaceName().toWideCharPointer(), dwRange);
+                const float fontHeightToEmSizeFactor = getFontHeightToEmSizeFactor(attrFont->font, *dwFontCollection);
+                dwTextLayout->SetFontSize(attrFont->font.getHeight() * fontHeightToEmSizeFactor, dwRange);
             }
             if (attr->attribute == Attr::foregroundColour)
             {
                 AttrColour* attrColour = static_cast<AttrColour*>(attr);
-                DWRITE_TEXT_RANGE range;
-                range.startPosition = attrColour->range.getStart();
-                range.length = attrColour->range.getLength();
+                DWRITE_TEXT_RANGE dwRange;
+                dwRange.startPosition = attrColour->range.getStart();
+                dwRange.length = attrColour->range.getLength();
 
-                ID2D1SolidColorBrush* pBrush = nullptr;
-                pDCRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(attrColour->colour.getFloatRed(),
+                ID2D1SolidColorBrush* d2dBrush = nullptr;
+                d2dDCRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(attrColour->colour.getFloatRed(),
                     attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(),
-                    attrColour->colour.getFloatAlpha())), &pBrush);
+                    attrColour->colour.getFloatAlpha())), &d2dBrush);
                 // We need to call SetDrawingEffect with a legimate brush to get DirectWrite to break text based on colours
-                pTextLayout->SetDrawingEffect(pBrush, range);
-                safeRelease (&pBrush);
+                dwTextLayout->SetDrawingEffect(d2dBrush, dwRange);
+                safeRelease (&d2dBrush);
             }
         }
-        safeRelease (&pDCRT);
-        safeRelease (&pD2DFactory);
+        safeRelease (&d2dDCRT);
+        safeRelease (&d2dFactory);
 
         UINT32 actualLineCount = 0;
-        pTextLayout->GetLineMetrics(nullptr, 0, &actualLineCount);
+        dwTextLayout->GetLineMetrics (nullptr, 0, &actualLineCount);
         // Preallocate GlyphLayout Line Array
-        glyphLayout.setNumLines(actualLineCount);
-        DWRITE_LINE_METRICS* lineMetrics = new DWRITE_LINE_METRICS[actualLineCount];
-        pTextLayout->GetLineMetrics(lineMetrics, actualLineCount, &actualLineCount);
+        glyphLayout.setNumLines (actualLineCount);
+        HeapBlock <DWRITE_LINE_METRICS> dwLineMetrics (actualLineCount);
+        dwTextLayout->GetLineMetrics (dwLineMetrics, actualLineCount, &actualLineCount);
         int location = 0;
         for (UINT32 i = 0; i < actualLineCount; ++i)
         {
             // Get string range
-            Range<int> lineStringRange(location, (int) location + lineMetrics[i].length);
-            location = lineMetrics[i].length;
+            Range<int> lineStringRange (location, (int) location + dwLineMetrics[i].length);
+            location = dwLineMetrics[i].length;
             GlyphLine* glyphLine = new GlyphLine();
             glyphLine->setStringRange(lineStringRange);
             glyphLayout.addGlyphLine(glyphLine);
         }
-        delete [] lineMetrics;
 
-        CustomTextRenderer* pTextRenderer = nullptr;
-        pTextRenderer = new CustomTextRenderer();
-        hr = pTextLayout->Draw(
+        CustomTextRenderer* textRenderer = nullptr;
+        textRenderer = new CustomTextRenderer();
+        hr = dwTextLayout->Draw (
             &glyphLayout,
-            pTextRenderer,
+            textRenderer,
             glyphLayout.getX(),
             glyphLayout.getY()
             );
 
-        safeRelease (&pTextRenderer);
-        safeRelease (&pTextLayout);
-        safeRelease (&pTextFormat);
-        safeRelease (&pFontCollection);
-        safeRelease (&pDWriteFactory);
+        safeRelease (&textRenderer);
+        safeRelease (&dwTextLayout);
+        safeRelease (&dwTextFormat);
+        safeRelease (&dwFontCollection);
+        safeRelease (&dwFactory);
     }
 
 private:
 
-    const float getFontHeightToEmSizeFactor(Font& font, IDWriteFontCollection& pFontCollection)
+    const float getFontHeightToEmSizeFactor(Font& font, IDWriteFontCollection& dwFontCollection)
     {
         // To set the font size, we need to get the font metrics
         BOOL fontFound;
         uint32 fontIndex;
 
-        pFontCollection.FindFamilyName (font.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
-        if (!fontFound) fontIndex = 0;
+        dwFontCollection.FindFamilyName (font.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
+        if (! fontFound)
+            fontIndex = 0;
 
-        IDWriteFontFamily* pFontFamily = nullptr;
-        pFontCollection.GetFontFamily (fontIndex, &pFontFamily);
+        IDWriteFontFamily* dwFontFamily = nullptr;
+        dwFontCollection.GetFontFamily (fontIndex, &dwFontFamily);
 
-        IDWriteFont* pFont = nullptr;
-        pFontFamily->GetFirstMatchingFont (DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &pFont);
-        IDWriteFontFace* pFontFace = nullptr;
-        pFont->CreateFontFace (&pFontFace);
+        IDWriteFont* dwFont = nullptr;
+        dwFontFamily->GetFirstMatchingFont (DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &dwFont);
+        IDWriteFontFace* dwFontFace = nullptr;
+        dwFont->CreateFontFace (&dwFontFace);
 
-        DWRITE_FONT_METRICS fontMetrics;
-        pFontFace->GetMetrics(&fontMetrics);
-        const float totalHeight = std::abs ((float) fontMetrics.ascent) + std::abs ((float) fontMetrics.descent);
-        const float fontHeightToEmSizeFactor = (float) fontMetrics.designUnitsPerEm / totalHeight;
+        DWRITE_FONT_METRICS dwFontMetrics;
+        dwFontFace->GetMetrics (&dwFontMetrics);
+        const float totalHeight = std::abs ((float) dwFontMetrics.ascent) + std::abs ((float) dwFontMetrics.descent);
+        const float fontHeightToEmSizeFactor = (float) dwFontMetrics.designUnitsPerEm / totalHeight;
 
-        safeRelease (&pFontFace);
-        safeRelease (&pFont);
-        safeRelease (&pFontFamily);
+        safeRelease (&dwFontFace);
+        safeRelease (&dwFont);
+        safeRelease (&dwFontFamily);
 
         return fontHeightToEmSizeFactor;
     }
