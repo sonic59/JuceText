@@ -23,25 +23,29 @@
   ==============================================================================
 */
 
-CustomTextRenderer::CustomTextRenderer() : m_cRef(1), currentRun(0), currentLine(-1), lastOriginY(-1.0f)
+CustomDirectWriteTextRenderer::CustomDirectWriteTextRenderer()
+    : refCount(1),
+      currentRun(0),
+      currentLine(-1),
+      lastOriginY(-1.0f)
 {
-    m_DWriteFactory = nullptr;
+    dwFactory = nullptr;
     DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-        reinterpret_cast<IUnknown**>(&m_DWriteFactory));
+        reinterpret_cast<IUnknown**>(&dwFactory));
 
-    m_FontCollection = nullptr;
-    m_DWriteFactory->GetSystemFontCollection(&m_FontCollection);
+    dwFontCollection = nullptr;
+    dwFactory->GetSystemFontCollection(&dwFontCollection);
 }
 
 
-CustomTextRenderer::~CustomTextRenderer()
+CustomDirectWriteTextRenderer::~CustomDirectWriteTextRenderer()
 {
-    safeRelease(&m_FontCollection);
-    safeRelease(&m_DWriteFactory);
+    safeRelease(&dwFontCollection);
+    safeRelease(&dwFactory);
 }
 
 
-IFACEMETHODIMP CustomTextRenderer::DrawGlyphRun(
+IFACEMETHODIMP CustomDirectWriteTextRenderer::DrawGlyphRun(
     __maybenull void* clientDrawingContext,
     FLOAT baselineOriginX,
     FLOAT baselineOriginY,
@@ -57,89 +61,98 @@ IFACEMETHODIMP CustomTextRenderer::DrawGlyphRun(
     {
         ++currentLine;
         // Set the line's origin to the current run's origin
-        GlyphLine& glyphLine = glyphLayout->getGlyphLine(currentLine);
-        Point<float> lineOrigin(baselineOriginX - glyphLayout->getX(), baselineOriginY - glyphLayout->getY());
-        glyphLine.setLineOrigin(lineOrigin);
+        GlyphLine& glyphLine = glyphLayout->getGlyphLine (currentLine);
+        // The x value is only accurate when dealing with LTR text
+        Point<float> lineOrigin (baselineOriginX - glyphLayout->getX(), baselineOriginY - glyphLayout->getY());
+        glyphLine.setLineOrigin (lineOrigin);
     }
     // Line Number Error Checking
-    if (currentLine < 0) return S_OK;
+    if (currentLine < 0)
+        return S_OK;
     // Add Maximum Run Descent to Line
-    GlyphLine& glyphLine = glyphLayout->getGlyphLine(currentLine);      
-    DWRITE_FONT_METRICS fontMetrics;
-    glyphRun->fontFace->GetMetrics(&fontMetrics);
-    float descent = (std::abs ((float) fontMetrics.descent) /  (float)fontMetrics.designUnitsPerEm) * glyphRun->fontEmSize;
-    if (descent > glyphLine.getDescent()) glyphLine.setDescent (descent);
+    GlyphLine& glyphLine = glyphLayout->getGlyphLine (currentLine);
+    DWRITE_FONT_METRICS dwFontMetrics;
+    glyphRun->fontFace->GetMetrics(&dwFontMetrics);
+    float descent = (std::abs ((float) dwFontMetrics.descent) /  (float) dwFontMetrics.designUnitsPerEm) * glyphRun->fontEmSize;
+    if (descent > glyphLine.getDescent())
+        glyphLine.setDescent (descent);
     // Create GlyphRun
     int runStringEnd = glyphRunDescription->textPosition + glyphRunDescription->stringLength;
-    GlyphRun* glyphRunLayout = new GlyphRun(glyphRun->glyphCount, glyphRunDescription->textPosition, runStringEnd);
+    GlyphRun* glyphRunLayout = new GlyphRun (glyphRun->glyphCount, glyphRunDescription->textPosition, runStringEnd);
     // Add Font Attribute to GlyphRun     
     Font runFont;   
-    IDWriteFont* pFont = nullptr;
-    m_FontCollection->GetFontFromFontFace(glyphRun->fontFace, &pFont);
+    IDWriteFont* dwFont = nullptr;
+    HRESULT hr = dwFontCollection->GetFontFromFontFace (glyphRun->fontFace, &dwFont);
     // Set Style Flags
     int styleFlags = 0;
-    if (pFont->GetWeight() == DWRITE_FONT_WEIGHT_BOLD) styleFlags &= Font::bold;
-    if (pFont->GetWeight() == DWRITE_FONT_STYLE_ITALIC) styleFlags &= Font::italic;
+    if (dwFont->GetWeight() == DWRITE_FONT_WEIGHT_BOLD) styleFlags &= Font::bold;
+    if (dwFont->GetStyle() == DWRITE_FONT_STYLE_ITALIC) styleFlags &= Font::italic;
     // Get Font Fame
-    IDWriteFontFamily* pFontFamily = nullptr;
-    pFont->GetFontFamily(&pFontFamily);
-    IDWriteLocalizedStrings* pFamilyNames = nullptr;
-    pFontFamily->GetFamilyNames(&pFamilyNames);
+    IDWriteFontFamily* dwFontFamily = nullptr;
+    hr = dwFont->GetFontFamily (&dwFontFamily);
+    IDWriteLocalizedStrings* dwFamilyNames = nullptr;
+    hr = dwFontFamily->GetFamilyNames (&dwFamilyNames);
     UINT32 index = 0;
     BOOL exists = false;
-    pFamilyNames->FindLocaleName(L"en-us", &index, &exists);
-    if (!exists) index = 0;
+    hr = dwFamilyNames->FindLocaleName (L"en-us", &index, &exists);
+    if (!exists)
+        index = 0;
     UINT32 length = 0;
-    pFamilyNames->GetStringLength(index, &length);
-    wchar_t* name = new wchar_t[length+1];
-    HRESULT hr = pFamilyNames->GetString(index, name, length+1);
-    String fontName(name);
-    delete name;
-    safeRelease(&pFamilyNames);
-    safeRelease(&pFontFamily);
-    safeRelease(&pFont);
-    if (SUCCEEDED(hr))
+    hr = dwFamilyNames->GetStringLength (index, &length);
+    HeapBlock <wchar_t> name (length+1);
+    hr = dwFamilyNames->GetString (index, name, length+1);
+    String fontName (name);
+    safeRelease (&dwFamilyNames);
+    safeRelease (&dwFontFamily);
+    safeRelease (&dwFont);
+    if (SUCCEEDED (hr))
     {
-        DWRITE_FONT_METRICS fontMetrics;
-        glyphRun->fontFace->GetMetrics(&fontMetrics);
-        const float totalHeight = std::abs ((float) fontMetrics.ascent) + std::abs ((float) fontMetrics.descent);
-        const float fontHeightToEmSizeFactor = (float) fontMetrics.designUnitsPerEm / totalHeight;
+        DWRITE_FONT_METRICS dwFontMetrics;
+        glyphRun->fontFace->GetMetrics (&dwFontMetrics);
+        const float totalHeight = std::abs ((float) dwFontMetrics.ascent) + std::abs ((float) dwFontMetrics.descent);
+        const float fontHeightToEmSizeFactor = (float) dwFontMetrics.designUnitsPerEm / totalHeight;
         const float fontHeight = glyphRun->fontEmSize / fontHeightToEmSizeFactor;
-        Font newRunFont(fontName, fontHeight, styleFlags);
+        Font newRunFont (fontName, fontHeight, styleFlags);
         runFont = newRunFont;
     }
-    glyphRunLayout->setFont(runFont);
+    glyphRunLayout->setFont (runFont);
     // Add Color Attribute to GlyphRun
-    Colour runColour(Colours::black);
-    ID2D1SolidColorBrush* pBrush = static_cast<ID2D1SolidColorBrush*>(clientDrawingEffect);
-    if (pBrush != nullptr)
+    Colour runColour (Colours::black);
+    ID2D1SolidColorBrush* d2dBrush = static_cast<ID2D1SolidColorBrush*>(clientDrawingEffect);
+    if (d2dBrush != nullptr)
     {
-        uint8 r = (uint8) (pBrush->GetColor().r * 255);
-        uint8 g = (uint8) (pBrush->GetColor().g * 255);
-        uint8 b = (uint8) (pBrush->GetColor().b * 255);
-        uint8 a = (uint8) (pBrush->GetColor().a * 255);
-        Colour newRunColour(r, g, b, a);
+        uint8 r = (uint8) (d2dBrush->GetColor().r * 255);
+        uint8 g = (uint8) (d2dBrush->GetColor().g * 255);
+        uint8 b = (uint8) (d2dBrush->GetColor().b * 255);
+        uint8 a = (uint8) (d2dBrush->GetColor().a * 255);
+        Colour newRunColour (r, g, b, a);
         runColour = newRunColour;        
     }
-    glyphRunLayout->setColour(runColour);
+    glyphRunLayout->setColour (runColour);
     // Add Individual Glyph Data
     float xOffset = baselineOriginX;
     for (UINT32 i = 0; i < glyphRun->glyphCount; ++i)
     {
-        if (glyphRun->bidiLevel % 2 == 1) xOffset -= glyphRun->glyphAdvances[i];
+        // Odd Bidi Level indicates RTL text
+        // Text Origin is on the right, text should be drawn to the left
+        if (glyphRun->bidiLevel % 2 == 1)
+            xOffset -= glyphRun->glyphAdvances[i];
         Glyph* glyph = new Glyph(glyphRun->glyphIndices[i], xOffset, baselineOriginY);
         glyphRunLayout->addGlyph(glyph);
-        if (glyphRun->bidiLevel % 2 == 0) xOffset += glyphRun->glyphAdvances[i];
+        // Even Number Bidi Level indicates LTR text
+        // Text Origin is on the left, text should be drawn to the right
+        if (glyphRun->bidiLevel % 2 == 0)
+            xOffset += glyphRun->glyphAdvances[i];
     }
     
-    glyphLine.addGlyphRun(glyphRunLayout);
+    glyphLine.addGlyphRun (glyphRunLayout);
 
     lastOriginY = baselineOriginY;
     ++currentRun;
     return S_OK;
 }
 
-IFACEMETHODIMP CustomTextRenderer::DrawUnderline(
+IFACEMETHODIMP CustomDirectWriteTextRenderer::DrawUnderline(
     __maybenull void* /*clientDrawingContext*/,
     FLOAT /*baselineOriginX*/,
     FLOAT /*baselineOriginY*/,
@@ -150,7 +163,7 @@ IFACEMETHODIMP CustomTextRenderer::DrawUnderline(
     return S_OK;
 }
 
-IFACEMETHODIMP CustomTextRenderer::DrawStrikethrough(
+IFACEMETHODIMP CustomDirectWriteTextRenderer::DrawStrikethrough(
     __maybenull void* /*clientDrawingContext*/,
     FLOAT /*baselineOriginX*/,
     FLOAT /*baselineOriginY*/,
@@ -161,7 +174,7 @@ IFACEMETHODIMP CustomTextRenderer::DrawStrikethrough(
     return S_OK;
 }
 
-IFACEMETHODIMP CustomTextRenderer::DrawInlineObject(
+IFACEMETHODIMP CustomDirectWriteTextRenderer::DrawInlineObject(
     __maybenull void* /*clientDrawingContext*/,
     FLOAT /*originX*/,
     FLOAT /*originY*/,
@@ -174,15 +187,15 @@ IFACEMETHODIMP CustomTextRenderer::DrawInlineObject(
     return E_NOTIMPL;
 }
 
-IFACEMETHODIMP_(unsigned long) CustomTextRenderer::AddRef()
+IFACEMETHODIMP_(unsigned long) CustomDirectWriteTextRenderer::AddRef()
 {
-    return InterlockedIncrement(reinterpret_cast<LONG volatile *>(&m_cRef));
+    return InterlockedIncrement(reinterpret_cast<LONG volatile *>(&refCount));
 }
 
-IFACEMETHODIMP_(unsigned long) CustomTextRenderer::Release()
+IFACEMETHODIMP_(unsigned long) CustomDirectWriteTextRenderer::Release()
 {
     ULONG cRef = static_cast<ULONG>(
-    InterlockedDecrement(reinterpret_cast<LONG volatile *>(&m_cRef)));
+    InterlockedDecrement(reinterpret_cast<LONG volatile *>(&refCount)));
 
     if(0 == cRef)
     {
@@ -192,7 +205,7 @@ IFACEMETHODIMP_(unsigned long) CustomTextRenderer::Release()
     return cRef;
 }
 
-IFACEMETHODIMP CustomTextRenderer::IsPixelSnappingDisabled(
+IFACEMETHODIMP CustomDirectWriteTextRenderer::IsPixelSnappingDisabled(
     __maybenull void* /*clientDrawingContext*/,
     __out BOOL* isDisabled
     )
@@ -201,7 +214,7 @@ IFACEMETHODIMP CustomTextRenderer::IsPixelSnappingDisabled(
     return S_OK;
 }
 
-IFACEMETHODIMP CustomTextRenderer::GetCurrentTransform(
+IFACEMETHODIMP CustomDirectWriteTextRenderer::GetCurrentTransform(
     __maybenull void* /*clientDrawingContext*/,
     __out DWRITE_MATRIX* /*transform*/
     )
@@ -209,7 +222,7 @@ IFACEMETHODIMP CustomTextRenderer::GetCurrentTransform(
     return S_OK;
 }
 
-IFACEMETHODIMP CustomTextRenderer::GetPixelsPerDip(
+IFACEMETHODIMP CustomDirectWriteTextRenderer::GetPixelsPerDip(
     __maybenull void* /*clientDrawingContext*/,
     __out FLOAT* /*pixelsPerDip*/
     )
@@ -217,7 +230,7 @@ IFACEMETHODIMP CustomTextRenderer::GetPixelsPerDip(
     return S_OK;
 }
 
-IFACEMETHODIMP CustomTextRenderer::QueryInterface(
+IFACEMETHODIMP CustomDirectWriteTextRenderer::QueryInterface(
     IID const& riid,
     void** ppvObject
     )

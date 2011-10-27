@@ -92,7 +92,7 @@ public:
         // To add color to text, we need to create a D2D render target
         // Since we are not actually rendering to a D2D context we create a temporary GDI render target
         ID2D1Factory *d2dFactory = nullptr;
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
+        hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
         D2D1_RENDER_TARGET_PROPERTIES d2dRTProp = D2D1::RenderTargetProperties(
             D2D1_RENDER_TARGET_TYPE_SOFTWARE,
             D2D1::PixelFormat(
@@ -104,7 +104,7 @@ public:
             D2D1_FEATURE_LEVEL_DEFAULT
             );
         ID2D1DCRenderTarget* d2dDCRT = nullptr;
-        d2dFactory->CreateDCRenderTarget(&d2dRTProp, &d2dDCRT);
+        hr = d2dFactory->CreateDCRenderTarget(&d2dRTProp, &d2dDCRT);
         // Character Attributes
         int numCharacterAttributes = text.getCharAttributesSize();
         for (int i = 0; i < numCharacterAttributes; ++i)
@@ -143,11 +143,11 @@ public:
         safeRelease (&d2dFactory);
 
         UINT32 actualLineCount = 0;
-        dwTextLayout->GetLineMetrics (nullptr, 0, &actualLineCount);
+        hr = dwTextLayout->GetLineMetrics (nullptr, 0, &actualLineCount);
         // Preallocate GlyphLayout Line Array
         glyphLayout.setNumLines (actualLineCount);
         HeapBlock <DWRITE_LINE_METRICS> dwLineMetrics (actualLineCount);
-        dwTextLayout->GetLineMetrics (dwLineMetrics, actualLineCount, &actualLineCount);
+        hr = dwTextLayout->GetLineMetrics (dwLineMetrics, actualLineCount, &actualLineCount);
         int location = 0;
         for (UINT32 i = 0; i < actualLineCount; ++i)
         {
@@ -159,8 +159,8 @@ public:
             glyphLayout.addGlyphLine(glyphLine);
         }
 
-        CustomTextRenderer* textRenderer = nullptr;
-        textRenderer = new CustomTextRenderer();
+        CustomDirectWriteTextRenderer* textRenderer = nullptr;
+        textRenderer = new CustomDirectWriteTextRenderer();
         hr = dwTextLayout->Draw (
             &glyphLayout,
             textRenderer,
@@ -183,17 +183,20 @@ private:
         BOOL fontFound;
         uint32 fontIndex;
 
-        dwFontCollection.FindFamilyName (font.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
+        HRESULT hr = dwFontCollection.FindFamilyName (font.getTypefaceName().toWideCharPointer(),
+                                                      &fontIndex, &fontFound);
         if (! fontFound)
             fontIndex = 0;
 
         IDWriteFontFamily* dwFontFamily = nullptr;
-        dwFontCollection.GetFontFamily (fontIndex, &dwFontFamily);
+        hr = dwFontCollection.GetFontFamily (fontIndex, &dwFontFamily);
 
         IDWriteFont* dwFont = nullptr;
-        dwFontFamily->GetFirstMatchingFont (DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &dwFont);
+        hr = dwFontFamily->GetFirstMatchingFont (DWRITE_FONT_WEIGHT_NORMAL,
+                                                 DWRITE_FONT_STRETCH_NORMAL,
+                                                 DWRITE_FONT_STYLE_NORMAL, &dwFont);
         IDWriteFontFace* dwFontFace = nullptr;
-        dwFont->CreateFontFace (&dwFontFace);
+        hr = dwFont->CreateFontFace (&dwFontFace);
 
         DWRITE_FONT_METRICS dwFontMetrics;
         dwFontFace->GetMetrics (&dwFontMetrics);

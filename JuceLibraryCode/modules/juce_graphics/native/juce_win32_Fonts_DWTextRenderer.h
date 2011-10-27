@@ -27,12 +27,12 @@
 #define __JUCE_WIN_DWTEXTRENDERER_JUCEHEADER__
 
 
-class CustomTextRenderer : public IDWriteTextRenderer
+class CustomDirectWriteTextRenderer : public IDWriteTextRenderer
 {
 public:
-    CustomTextRenderer();
+    CustomDirectWriteTextRenderer();
 
-    ~CustomTextRenderer();
+    ~CustomDirectWriteTextRenderer();
 
     IFACEMETHOD(IsPixelSnappingDisabled)(
         __maybenull void* clientDrawingContext,
@@ -94,9 +94,9 @@ public:
     );
 
 private:
-    UINT m_cRef;
-    IDWriteFactory* m_DWriteFactory;
-    IDWriteFontCollection* m_FontCollection;
+    UINT refCount;
+    IDWriteFactory* dwFactory;
+    IDWriteFontCollection* dwFontCollection;
     int currentRun;
     int currentLine;
     float lastOriginY;
@@ -110,6 +110,8 @@ private:
             *ppT = nullptr;
         }
     }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomDirectWriteTextRenderer);
 };
 
 
