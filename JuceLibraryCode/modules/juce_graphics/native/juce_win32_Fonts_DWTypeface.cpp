@@ -27,7 +27,7 @@ class PathGeometrySink : public IDWriteGeometrySink
 {
     public:
         PathGeometrySink()
-            : m_cRef(1)
+            : refCount(1)
         {
         }
 
@@ -38,13 +38,13 @@ class PathGeometrySink : public IDWriteGeometrySink
 
         STDMETHOD_(ULONG, AddRef)(THIS)
         {
-            return InterlockedIncrement(reinterpret_cast<LONG volatile *>(&m_cRef));
+            return InterlockedIncrement(reinterpret_cast<LONG volatile *>(&refCount));
         }
 
         STDMETHOD_(ULONG, Release)(THIS)
         {
             ULONG cRef = static_cast<ULONG>(
-            InterlockedDecrement(reinterpret_cast<LONG volatile *>(&m_cRef)));
+            InterlockedDecrement(reinterpret_cast<LONG volatile *>(&refCount)));
 
             if(0 == cRef)
             {
@@ -124,59 +124,61 @@ class PathGeometrySink : public IDWriteGeometrySink
         }
 
     private:
-        UINT m_cRef;
+        UINT refCount;
         Path path;
+
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PathGeometrySink);
 };
 
-class WindowsDWriteTypeface  : public Typeface
+class WindowsDirectWriteTypeface  : public Typeface
 {
 public:
-    WindowsDWriteTypeface (const Font& font)
+    WindowsDirectWriteTypeface (const Font& font)
         : Typeface (font.getTypefaceName()),
           ascent (0.0f)
     {
-        IDWriteFactory* pDWriteFactory = nullptr;
+        IDWriteFactory* dwFactory = nullptr;
         HRESULT hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-            reinterpret_cast<IUnknown**>(&pDWriteFactory));
+            reinterpret_cast<IUnknown**>(&dwFactory));
 
-        IDWriteFontCollection* pFontCollection = nullptr;
-        hr = pDWriteFactory->GetSystemFontCollection(&pFontCollection);
+        IDWriteFontCollection* dwFontCollection = nullptr;
+        hr = dwFactory->GetSystemFontCollection(&dwFontCollection);
         BOOL fontFound;
         uint32 fontIndex;
-        pFontCollection->FindFamilyName (font.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
-        if (!fontFound)
+        hr = dwFontCollection->FindFamilyName (font.getTypefaceName().toWideCharPointer(), &fontIndex, &fontFound);
+        if (! fontFound)
             fontIndex = 0;
 
-        IDWriteFontFamily* pFontFamily = nullptr;
-        pFontCollection->GetFontFamily (fontIndex, &pFontFamily);
+        IDWriteFontFamily* dwFontFamily = nullptr;
+        hr = dwFontCollection->GetFontFamily (fontIndex, &dwFontFamily);
 
-        IDWriteFont* pFont = nullptr;
-        DWRITE_FONT_WEIGHT weight = font.isBold() ? DWRITE_FONT_WEIGHT_BOLD  : DWRITE_FONT_WEIGHT_NORMAL;
-        DWRITE_FONT_STYLE style = font.isItalic() ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
-        pFontFamily->GetFirstMatchingFont (weight, DWRITE_FONT_STRETCH_NORMAL, style, &pFont);
-        pFont->CreateFontFace (&pFontFace);
+        IDWriteFont* dwFont = nullptr;
+        DWRITE_FONT_WEIGHT dwWeight = font.isBold() ? DWRITE_FONT_WEIGHT_BOLD  : DWRITE_FONT_WEIGHT_NORMAL;
+        DWRITE_FONT_STYLE dwStyle = font.isItalic() ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
+        hr = dwFontFamily->GetFirstMatchingFont (dwWeight, DWRITE_FONT_STRETCH_NORMAL, dwStyle, &dwFont);
+        hr = dwFont->CreateFontFace (&dwFontFace);
 
-        DWRITE_FONT_METRICS fontMetrics;
-        pFontFace->GetMetrics(&fontMetrics);
-        designUnitsPerEm = fontMetrics.designUnitsPerEm;
-        ascent = std::abs ((float) fontMetrics.ascent);
-        const float totalSize = ascent + std::abs ((float) fontMetrics.descent);
+        DWRITE_FONT_METRICS dwFontMetrics;
+        dwFontFace->GetMetrics(&dwFontMetrics);
+        designUnitsPerEm = dwFontMetrics.designUnitsPerEm;
+        ascent = std::abs ((float) dwFontMetrics.ascent);
+        const float totalSize = ascent + std::abs ((float) dwFontMetrics.descent);
         ascent /= totalSize;
         unitsToHeightScaleFactor = 1.0f / (totalSize / designUnitsPerEm);
-        const float pathAscent = (((float) fontMetrics.ascent) / ((float) designUnitsPerEm)) * 1024.0f;
-        const float pathDescent = (((float) fontMetrics.descent) / ((float) designUnitsPerEm)) * 1024.0f;
+        const float pathAscent = (((float) dwFontMetrics.ascent) / ((float) designUnitsPerEm)) * 1024.0f;
+        const float pathDescent = (((float) dwFontMetrics.descent) / ((float) designUnitsPerEm)) * 1024.0f;
         const float pathTotalSize = std::abs (pathAscent) + std::abs (pathDescent);
         pathTransform = AffineTransform::identity.scale (1.0f / pathTotalSize, 1.0f / pathTotalSize);
 
-        safeRelease (&pFont);
-        safeRelease (&pFontFamily);
-        safeRelease (&pFontCollection);
-        safeRelease (&pDWriteFactory);
+        safeRelease (&dwFont);
+        safeRelease (&dwFontFamily);
+        safeRelease (&dwFontCollection);
+        safeRelease (&dwFactory);
     }
 
-    ~WindowsDWriteTypeface()
+    ~WindowsDirectWriteTypeface()
     {
-        safeRelease (&pFontFace);
+        safeRelease (&dwFontFace);
     }
 
     float getAscent() const     { return ascent; }
@@ -187,18 +189,16 @@ public:
         float x = 0;
         // GetGlyphIndices works with UCS4 Code Points
         CharPointer_UTF32 textUTF32 = text.toUTF32();
-        UINT16* glyphIndicies = new UINT16[textUTF32.length()];
-        pFontFace->GetGlyphIndices (textUTF32, textUTF32.length(), glyphIndicies);
-        DWRITE_GLYPH_METRICS* glyphMetrics = new DWRITE_GLYPH_METRICS[textUTF32.length()];
-        // glyphMetrics in font design units
-        pFontFace->GetDesignGlyphMetrics (glyphIndicies, textUTF32.length(), glyphMetrics, false);
+        HeapBlock <UINT16> glyphIndicies (textUTF32.length());
+        dwFontFace->GetGlyphIndices (textUTF32, textUTF32.length(), glyphIndicies);
+        HeapBlock <DWRITE_GLYPH_METRICS> dwGlyphMetrics (textUTF32.length());
+        // dwGlyphMetrics in font design units
+        dwFontFace->GetDesignGlyphMetrics (glyphIndicies, textUTF32.length(), dwGlyphMetrics, false);
         for (size_t i = 0; i < textUTF32.length(); ++i)
         {
-            x += (float) glyphMetrics[i].advanceWidth / designUnitsPerEm;
+            x += (float) dwGlyphMetrics[i].advanceWidth / designUnitsPerEm;
         }
         x *= unitsToHeightScaleFactor;
-        delete [] glyphMetrics;
-        delete [] glyphIndicies;
         return x;
     }
 
@@ -208,19 +208,17 @@ public:
         float x = 0;
         // GetGlyphIndices works with UCS4 Code Points
         CharPointer_UTF32 textUTF32 = text.toUTF32();
-        UINT16* glyphIndicies = new UINT16[textUTF32.length()];
-        pFontFace->GetGlyphIndices (textUTF32, textUTF32.length(), glyphIndicies);
-        DWRITE_GLYPH_METRICS* glyphMetrics = new DWRITE_GLYPH_METRICS[textUTF32.length()];
-        // glyphMetrics in font design units
-        pFontFace->GetDesignGlyphMetrics (glyphIndicies, textUTF32.length(), glyphMetrics, false);
+        HeapBlock <UINT16> glyphIndicies (textUTF32.length());
+        dwFontFace->GetGlyphIndices (textUTF32, textUTF32.length(), glyphIndicies);
+        HeapBlock <DWRITE_GLYPH_METRICS> dwGlyphMetrics (textUTF32.length());
+        // dwGlyphMetrics in font design units
+        dwFontFace->GetDesignGlyphMetrics (glyphIndicies, textUTF32.length(), dwGlyphMetrics, false);
         for (size_t i = 0; i < textUTF32.length(); ++i)
         {
-            x += (float) glyphMetrics[i].advanceWidth / designUnitsPerEm;
+            x += (float) dwGlyphMetrics[i].advanceWidth / designUnitsPerEm;
             xOffsets.add (x * unitsToHeightScaleFactor);
             resultGlyphs.add (glyphIndicies[i]);
         }
-        delete [] glyphMetrics;
-        delete [] glyphIndicies;
     }
 
     EdgeTable* getEdgeTableForGlyph (int glyphNumber, const AffineTransform& transform)
@@ -238,19 +236,19 @@ public:
     {
         jassert (path.isEmpty());  // we might need to apply a transform to the path, so this must be empty
         UINT16 glyphIndex = (UINT16) glyphNumber;
-        PathGeometrySink* pPathGeometrySink = nullptr;
-        pPathGeometrySink = new PathGeometrySink();
-        pFontFace->GetGlyphRunOutline (1024.0f, &glyphIndex, nullptr, nullptr, 1, false, false, pPathGeometrySink);
-        path = pPathGeometrySink->getPath();
+        PathGeometrySink* pathGeometrySink = nullptr;
+        pathGeometrySink = new PathGeometrySink();
+        dwFontFace->GetGlyphRunOutline (1024.0f, &glyphIndex, nullptr, nullptr, 1, false, false, pathGeometrySink);
+        path = pathGeometrySink->getPath();
         if (!pathTransform.isIdentity())
             path.applyTransform (pathTransform);
-        pPathGeometrySink->Close();
-        safeRelease (&pPathGeometrySink);
+        pathGeometrySink->Close();
+        safeRelease (&pathGeometrySink);
         return true;
     }
 
 private:
-    IDWriteFontFace* pFontFace;
+    IDWriteFontFace* dwFontFace;
     float unitsToHeightScaleFactor;
     float ascent;
     int designUnitsPerEm;
@@ -266,11 +264,11 @@ private:
         }
     }
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WindowsDWriteTypeface);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WindowsDirectWriteTypeface);
 };
 
 Typeface::Ptr Typeface::createSystemTypefaceFor (const Font& font)
 {
     //return new WindowsTypeface (font);
-    return new WindowsDWriteTypeface (font);
+    return new WindowsDirectWriteTypeface (font);
 }
