@@ -39,17 +39,19 @@ public:
     static CFAttributedStringRef getAttributedString(const AttributedString& text)
     {
         CFStringRef cfText = text.getText().toCFString();
-        CFMutableAttributedStringRef attribString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
+        CFMutableAttributedStringRef attribString = CFAttributedStringCreateMutable (kCFAllocatorDefault, 0);
         CFAttributedStringReplaceString (attribString, CFRangeMake(0, 0), cfText);
         CFRelease (cfText);
         // Character Attributes
         int numCharacterAttributes = text.getCharAttributesSize();
         for (int i = 0; i < numCharacterAttributes; ++i)
         {
-            Attr* attr = text.getCharAttribute(i);
+            Attr* attr = text.getCharAttribute (i);
             // Character Range Error Checking
-            if (attr->range.getStart() > CFAttributedStringGetLength(attribString)) continue;
-            if (attr->range.getEnd() > CFAttributedStringGetLength(attribString)) attr->range.setEnd(CFAttributedStringGetLength(attribString));
+            if (attr->range.getStart() > CFAttributedStringGetLength (attribString))
+                continue;
+            if (attr->range.getEnd() > CFAttributedStringGetLength (attribString))
+                attr->range.setEnd(CFAttributedStringGetLength(attribString));
             if (attr->attribute == Attr::font)
             {
                 AttrFont* attrFont = static_cast<AttrFont*>(attr);
@@ -57,20 +59,28 @@ public:
                 // Apply fontHeightToCGSizeFactor to the font size since this is how glyphs are drawn
                 ctFontRef = CTFontCreateWithName (attrFont->font.getTypefaceName().toCFString(), 1024, nullptr);
                 CGFontRef cgFontRef = CTFontCopyGraphicsFont (ctFontRef, nullptr);
-                CFRelease(ctFontRef);
+                CFRelease (ctFontRef);
                 const int totalHeight = abs (CGFontGetAscent (cgFontRef)) + abs (CGFontGetDescent (cgFontRef));
                 float fontHeightToCGSizeFactor = CGFontGetUnitsPerEm (cgFontRef) / (float) totalHeight;
-                CGFontRelease(cgFontRef);
-                ctFontRef = CTFontCreateWithName (attrFont->font.getTypefaceName().toCFString(), attrFont->font.getHeight() * fontHeightToCGSizeFactor, nullptr);
-                CFAttributedStringSetAttribute(attribString, CFRangeMake(attrFont->range.getStart(), attrFont->range.getLength()), kCTFontAttributeName, ctFontRef);
-                CFRelease(ctFontRef);
+                CGFontRelease (cgFontRef);
+                ctFontRef = CTFontCreateWithName (attrFont->font.getTypefaceName().toCFString(),
+                                                  attrFont->font.getHeight() * fontHeightToCGSizeFactor, nullptr);
+                CFAttributedStringSetAttribute (attribString,
+                                                CFRangeMake(attrFont->range.getStart(),attrFont->range.getLength()),
+                                                kCTFontAttributeName, ctFontRef);
+                CFRelease (ctFontRef);
             }
             if (attr->attribute == Attr::foregroundColour)
             {
                 AttrColour* attrColour = static_cast<AttrColour*>(attr);
-                CGColorRef colour = CGColorCreateGenericRGB(attrColour->colour.getFloatRed(), attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(), attrColour->colour.getFloatAlpha());
-                CFAttributedStringSetAttribute(attribString, CFRangeMake(attrColour->range.getStart(), attrColour->range.getLength()), kCTForegroundColorAttributeName, colour);
-                CGColorRelease(colour);
+                CGColorRef colour = CGColorCreateGenericRGB (attrColour->colour.getFloatRed(),
+                                                             attrColour->colour.getFloatGreen(),
+                                                             attrColour->colour.getFloatBlue(),
+                                                             attrColour->colour.getFloatAlpha());
+                CFAttributedStringSetAttribute (attribString,
+                                               CFRangeMake(attrColour->range.getStart(), attrColour->range.getLength()),
+                                               kCTForegroundColorAttributeName, colour);
+                CGColorRelease (colour);
             }
         }
         // Paragraph Attributes
@@ -78,12 +88,12 @@ public:
         CTLineBreakMode ctLineBreakMode = kCTLineBreakByWordWrapping;
         CGFloat ctLineSpacing = 0.0f;
         // Set Paragraph Alignment
-        if (text.getTextAlignment() == AttributedString::left) ctTextAlignment = kCTLeftTextAlignment;
-        if (text.getTextAlignment() == AttributedString::right) ctTextAlignment = kCTRightTextAlignment;
-        if (text.getTextAlignment() == AttributedString::center) ctTextAlignment = kCTCenterTextAlignment;
+        if (text.getTextAlignment() == AttributedString::left)      ctTextAlignment = kCTLeftTextAlignment;
+        if (text.getTextAlignment() == AttributedString::right)     ctTextAlignment = kCTRightTextAlignment;
+        if (text.getTextAlignment() == AttributedString::center)    ctTextAlignment = kCTCenterTextAlignment;
         if (text.getTextAlignment() == AttributedString::justified) ctTextAlignment = kCTJustifiedTextAlignment;
         // Set Word Wrap
-        if (text.getWordWrap() == AttributedString::none) ctLineBreakMode = kCTLineBreakByClipping;
+        if (text.getWordWrap() == AttributedString::none)   ctLineBreakMode = kCTLineBreakByClipping;
         if (text.getWordWrap() == AttributedString::byWord) ctLineBreakMode = kCTLineBreakByWordWrapping;
         if (text.getWordWrap() == AttributedString::byChar) ctLineBreakMode = kCTLineBreakByCharWrapping;
         // Set Line Spacing
@@ -96,29 +106,33 @@ public:
             { kCTParagraphStyleSpecifierLineBreakMode, sizeof(CTLineBreakMode), &ctLineBreakMode },
             { kCTParagraphStyleSpecifierLineSpacing, sizeof(CGFloat), &ctLineSpacing }
         };
-        CTParagraphStyleRef ctParagraphStyleRef = CTParagraphStyleCreate(settings, numSettings);
-        CFAttributedStringSetAttribute(attribString, CFRangeMake(0, CFAttributedStringGetLength(attribString)), kCTParagraphStyleAttributeName, ctParagraphStyleRef);
-        CFRelease(ctParagraphStyleRef);
+        CTParagraphStyleRef ctParagraphStyleRef = CTParagraphStyleCreate (settings, numSettings);
+        CFAttributedStringSetAttribute (attribString, CFRangeMake (0, CFAttributedStringGetLength(attribString)),
+                                        kCTParagraphStyleAttributeName, ctParagraphStyleRef);
+        CFRelease (ctParagraphStyleRef);
         return attribString;
     }
 
-    static int drawTextLayout (const AttributedString& text, const int x, const int y, const int width, const int height, const bool multipleLayouts, const CGContextRef& context, const float flipHeight)
+    static int drawTextLayout (const AttributedString& text, const int& x, const int& y, const int& width,
+                               const int& height, const bool& multipleLayouts, const CGContextRef& context,
+                               const float& flipHeight)
     {
-        CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString(text);
-        CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
-        CFRelease(attribString);
+        CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString (text);
+        CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString (attribString);
+        CFRelease (attribString);
 
         // Initialize a rectangular path.
 
         CGMutablePathRef path = CGPathCreateMutable();
-        CGRect bounds = CGRectMake((CGFloat)x, flipHeight - ((CGFloat)y + (CGFloat)height), (CGFloat)width, (CGFloat)height);
-        CGPathAddRect(path, NULL, bounds);
+        CGRect bounds = CGRectMake ((CGFloat) x, flipHeight - ((CGFloat) y + (CGFloat) height),
+                                    (CGFloat) width, (CGFloat) height);
+        CGPathAddRect (path, NULL, bounds);
 
         // Create the frame and draw it into the graphics context
 
-        CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
-        CFRelease(framesetter);
-        CGPathRelease(path);
+        CTFrameRef frame = CTFramesetterCreateFrame (framesetter, CFRangeMake(0, 0), path, NULL);
+        CFRelease (framesetter);
+        CGPathRelease (path);
 
         // Return a value > 0 to indicate software rendering is not necessary
         CGFloat textHeight = 1;
@@ -126,112 +140,117 @@ public:
         // Return Text Height if displaying multiple Layouts
         if (multipleLayouts)
         {
-            CFArrayRef lines = CTFrameGetLines(frame);
-            CFIndex numLines = CFArrayGetCount(lines);
+            CFArrayRef lines = CTFrameGetLines (frame);
+            CFIndex numLines = CFArrayGetCount (lines);
             CFIndex lastLineIndex = numLines - 1;
             CGFloat descent;
-            CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, lastLineIndex);
-            CTLineGetTypographicBounds(line, NULL,  &descent, NULL);
+            CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex (lines, lastLineIndex);
+            CTLineGetTypographicBounds (line, NULL,  &descent, NULL);
             CGPoint lastLineOrigin;
-            CTFrameGetLineOrigins(frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
-            textHeight =  (CGFloat)height - lastLineOrigin.y + descent;
+            CTFrameGetLineOrigins (frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
+            textHeight =  (CGFloat) height - lastLineOrigin.y + descent;
 
             // Add code here to perform vertical alignment for a single layout before drawing the frame
         }
 
-        CTFrameDraw(frame, context);
+        CTFrameDraw (frame, context);
 
-        CFRelease(frame);
-        return (int)textHeight;
+        CFRelease (frame);
+        return (int) textHeight;
     }
 
     void getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout)
     {
-        CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString(text);
-        CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(attribString);
-        CFRelease(attribString);
+        CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString (text);
+        CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString (attribString);
+        CFRelease (attribString);
 
         // Initialize a rectangular path.
         CGMutablePathRef path = CGPathCreateMutable();
-        CGRect bounds = CGRectMake(glyphLayout.getX(), glyphLayout.getY(), glyphLayout.getWidth(), glyphLayout.getHeight());
-        CGPathAddRect(path, NULL, bounds);
+        CGRect bounds = CGRectMake (glyphLayout.getX(), glyphLayout.getY(),
+                                    glyphLayout.getWidth(), glyphLayout.getHeight());
+        CGPathAddRect (path, NULL, bounds);
 
         // Create the frame
-        CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
-        CFRelease(framesetter);
-        CGPathRelease(path);
+        CTFrameRef frame = CTFramesetterCreateFrame (framesetter, CFRangeMake(0, 0), path, NULL);
+        CFRelease (framesetter);
+        CGPathRelease (path);
 
-        CFArrayRef lines = CTFrameGetLines(frame);
-        CFIndex numLines = CFArrayGetCount(lines);
+        CFArrayRef lines = CTFrameGetLines (frame);
+        CFIndex numLines = CFArrayGetCount (lines);
         // Preallocate GlyphLayout Line Array
-        glyphLayout.setNumLines(numLines);
+        glyphLayout.setNumLines (numLines);
         for (CFIndex i = 0; i < numLines; ++i)
         {
-            CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex(lines, i);
-            CFArrayRef runs = CTLineGetGlyphRuns(line);
-            CFIndex numRuns = CFArrayGetCount(runs);
+            CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex (lines, i);
+            CFArrayRef runs = CTLineGetGlyphRuns (line);
+            CFIndex numRuns = CFArrayGetCount (runs);
             // Get string range
-            CFRange cfrlineStringRange = CTLineGetStringRange(line);
+            CFRange cfrlineStringRange = CTLineGetStringRange (line);
             CFIndex lineStringEnd = cfrlineStringRange.location + cfrlineStringRange.length - 1;
-            Range<int> lineStringRange((int) cfrlineStringRange.location, (int) lineStringEnd);
+            Range<int> lineStringRange ((int) cfrlineStringRange.location, (int) lineStringEnd);
             // Get line origin
             CGPoint cgpLineOrigin;
-            CTFrameGetLineOrigins(frame, CFRangeMake(i, 1), &cgpLineOrigin);
+            CTFrameGetLineOrigins (frame, CFRangeMake(i, 1), &cgpLineOrigin);
             // CGPoint is in CG Coordinates (Y axis at bottom left)
-            Point<float> lineOrigin((float) cgpLineOrigin.x, glyphLayout.getHeight() - (float) cgpLineOrigin.y);
+            Point<float> lineOrigin ((float) cgpLineOrigin.x, glyphLayout.getHeight() - (float) cgpLineOrigin.y);
             // Get ascent, descent and leading
             CGFloat ascent;
             CGFloat descent;
             CGFloat leading;
-            CTLineGetTypographicBounds(line, &ascent,  &descent, &leading);
-            GlyphLine* glyphLine = new GlyphLine((int) numRuns, lineStringRange, lineOrigin,
-                                                 (float) ascent, (float) descent, (float) leading);
+            CTLineGetTypographicBounds (line, &ascent,  &descent, &leading);
+            GlyphLine* glyphLine = new GlyphLine ((int) numRuns, lineStringRange, lineOrigin,
+                                                  (float) ascent, (float) descent, (float) leading);
             for (CFIndex j = 0; j < numRuns; ++j)
             {
                 CTRunRef run = (CTRunRef) CFArrayGetValueAtIndex (runs, j);
-                CFIndex numGlyphs = CTRunGetGlyphCount(run);
-                CFRange runStringRange = CTRunGetStringRange(run);
+                CFIndex numGlyphs = CTRunGetGlyphCount (run);
+                CFRange runStringRange = CTRunGetStringRange (run);
                 CFIndex runStringEnd = runStringRange.location + runStringRange.length - 1;
-                GlyphRun* glyphRun = new GlyphRun((int) numGlyphs, (int) runStringRange.location, (int) runStringEnd);
+                GlyphRun* glyphRun = new GlyphRun ((int) numGlyphs, (int) runStringRange.location,
+                                                   (int) runStringEnd);
                 // Add Font Attribute to GlyphRun
-                CFDictionaryRef runAttributes = CTRunGetAttributes(run);
+                CFDictionaryRef runAttributes = CTRunGetAttributes (run);
                 CTFontRef ctRunFont;
-                bool fontPresent = CFDictionaryGetValueIfPresent(runAttributes, kCTFontAttributeName, (const void **)&ctRunFont);
+                bool fontPresent = CFDictionaryGetValueIfPresent (runAttributes, kCTFontAttributeName,
+                                                                  (const void **)&ctRunFont);
                 if (fontPresent)
                 {
-                    CFStringRef cfsFontName = CTFontCopyPostScriptName(ctRunFont);
+                    CFStringRef cfsFontName = CTFontCopyPostScriptName (ctRunFont);
                     String fontName;
-                    fontName = fontName.fromCFString(cfsFontName);
-                    CFRelease(cfsFontName);
+                    fontName = fontName.fromCFString (cfsFontName);
+                    CFRelease (cfsFontName);
                     // Reverse fontHeightToCGSizeFactor so it doesn't get applied twice
                     CTFontRef ctFontRef = CTFontCreateWithName (fontName.toCFString(), 1024, nullptr);
                     CGFontRef cgFontRef = CTFontCopyGraphicsFont (ctFontRef, nullptr);
                     CFRelease(ctFontRef);
                     const int totalHeight = abs (CGFontGetAscent (cgFontRef)) + abs (CGFontGetDescent (cgFontRef));
                     float fontHeightToCGSizeFactor = CGFontGetUnitsPerEm (cgFontRef) / (float) totalHeight;
-                    CGFontRelease(cgFontRef);
-                    float runFontSize = (float) CTFontGetSize(ctRunFont);
-                    Font runFont(fontName, runFontSize/fontHeightToCGSizeFactor, 0);
-                    glyphRun->setFont(runFont);
+                    CGFontRelease (cgFontRef);
+                    float runFontSize = (float) CTFontGetSize (ctRunFont);
+                    Font runFont (fontName, runFontSize/fontHeightToCGSizeFactor, 0);
+                    glyphRun->setFont (runFont);
                 }
                 // Add Color Attribute to GlyphRun
                 CGColorRef cgRunColor;
-                bool colourPresent = CFDictionaryGetValueIfPresent(runAttributes, kCTForegroundColorAttributeName, (const void **)&cgRunColor);
+                bool colourPresent = CFDictionaryGetValueIfPresent (runAttributes, kCTForegroundColorAttributeName,
+                                                                    (const void **)&cgRunColor);
                 if (colourPresent)
                 {
-                    const CGFloat* components = CGColorGetComponents(cgRunColor);
-                    const int numComponents = CGColorGetNumberOfComponents(cgRunColor);
+                    const CGFloat* components = CGColorGetComponents (cgRunColor);
+                    const int numComponents = CGColorGetNumberOfComponents (cgRunColor);
                     // RGBA
                     if (numComponents == 4)
                     {
-                        Colour runColour((uint8) (components[0] * 255), (uint8) (components[1] * 255), (uint8) (components[2] * 255), (float) components[3]);
-                        glyphRun->setColour(runColour);
+                        Colour runColour ((uint8) (components[0] * 255), (uint8) (components[1] * 255),
+                                          (uint8) (components[2] * 255), (float) components[3]);
+                        glyphRun->setColour (runColour);
                     }
                 }
                 // Add Individual Glyph Data
                 // First we will try to access the metrics without copying data
-                const CGGlyph* glyphsPtr = CTRunGetGlyphsPtr(run);
-                const CGPoint* posPtr = CTRunGetPositionsPtr(run);
+                const CGGlyph* glyphsPtr = CTRunGetGlyphsPtr (run);
+                const CGPoint* posPtr = CTRunGetPositionsPtr (run);
                 if (glyphsPtr != nullptr && posPtr != nullptr)
                 {
                     // We can access the metrics without copying them
@@ -255,15 +274,15 @@ public:
                     {
                         float xPos = glyphLayout.getX() + glyphLine->getLineOrigin().getX() + (float) positionBuffer[k].x;
                         float yPos = glyphLayout.getY() + glyphLine->getLineOrigin().getY() + (float) positionBuffer[k].y;
-                        Glyph* glyph = new Glyph(glyphBuffer[k], xPos, yPos);
-                        glyphRun->addGlyph(glyph);
+                        Glyph* glyph = new Glyph (glyphBuffer[k], xPos, yPos);
+                        glyphRun->addGlyph (glyph);
                     }
                 }
-                glyphLine->addGlyphRun(glyphRun);
+                glyphLine->addGlyphRun (glyphRun);
             }
-            glyphLayout.addGlyphLine(glyphLine);
+            glyphLayout.addGlyphLine (glyphLine);
         }
-        CFRelease(frame);
+        CFRelease (frame);
     }
 
 private:
