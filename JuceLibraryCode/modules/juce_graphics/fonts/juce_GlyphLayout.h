@@ -32,7 +32,7 @@
 class JUCE_API  Glyph
 {
 public:
-    Glyph(const int glyphCode, const float x, const float y);
+    Glyph (const int& glyphCode, const float& x, const float& y);
     ~Glyph();
 
     int getGlyphCode() const;
@@ -43,6 +43,7 @@ private:
     int glyphCode;
     float x;
     float y;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Glyph);
 };
 
@@ -50,23 +51,23 @@ class JUCE_API  GlyphRun
 {
 public:
     GlyphRun();
-    GlyphRun(const int numGlyphs, const int stringStart, const int stringEnd);
+    GlyphRun (const int& numGlyphs, const int& stringStart, const int& stringEnd);
     ~GlyphRun();
 
     int getNumGlyphs() const;
     const Font& getFont() const;
     const Colour& getColour() const;
-    Glyph& getGlyph (const int index) const;
+    Glyph& getGlyph (const int& index) const;
 
-    void setNumGlyphs(const int newNumGlyphs);
-    void setStringRange(const Range<int>& newStringRange);
-    void setFont(const Font& newFont);
-    void setColour(const Colour& newColour);
+    void setNumGlyphs (const int& newNumGlyphs);
+    void setStringRange (const Range<int>& newStringRange);
+    void setFont (const Font& newFont);
+    void setColour (const Colour& newColour);
 
     void addGlyph (const Glyph* glyph);
 
 private:
-    OwnedArray <Glyph> glyphs;
+    OwnedArray<Glyph> glyphs;
     Range<int> stringRange;
     Font font;
     Colour colour;
@@ -78,8 +79,9 @@ class JUCE_API  GlyphLine
 {
 public:
     GlyphLine();
-    GlyphLine(const int numRuns, const Range<int> stringRange, const Point<float> lineOrigin,
-              const float ascent, const float descent, const float leading);
+    GlyphLine (const int& numRuns, const Range<int>& stringRange,
+               const Point<float>& lineOrigin,const float& ascent,
+               const float& descent, const float& leading);
     ~GlyphLine();
 
     int getNumRuns() const;
@@ -87,16 +89,16 @@ public:
     float getAscent() const;
     float getDescent() const;
     float getLeading() const;
-    GlyphRun& getGlyphRun (const int index) const;
+    GlyphRun& getGlyphRun (const int& index) const;
 
-    void setStringRange(const Range<int>& newStringRange);
-    void setLineOrigin(const Point<float>& newLineOrigin);
-    void setDescent(const float newDescent);
+    void setStringRange (const Range<int>& newStringRange);
+    void setLineOrigin (const Point<float>& newLineOrigin);
+    void setDescent (const float& newDescent);
 
     void addGlyphRun (const GlyphRun* glyphRun);
 
 private:
-    OwnedArray <GlyphRun> runs;
+    OwnedArray<GlyphRun> runs;
     Range<int> stringRange;
     Point<float> lineOrigin;
     float ascent;
@@ -109,7 +111,8 @@ private:
 class JUCE_API  GlyphLayout
 {
 public:
-    GlyphLayout(const float x, const float y, const float width, const float height);
+    GlyphLayout (const float& x, const float& y, const float& width,
+                 const float& height);
     ~GlyphLayout();
 
     int getNumLines() const;
@@ -117,10 +120,10 @@ public:
     float getY() const;
     float getWidth() const;
     float getHeight() const;
-    GlyphLine& getGlyphLine (const int index) const;
-    float getTextHeight () const;
+    float getTextHeight() const;
+    GlyphLine& getGlyphLine (const int& index) const;
 
-    void setNumLines(const int value);
+    void setNumLines (const int& value);
     void setText (const AttributedString& text);
 
     void addGlyphLine (const GlyphLine* glyphLine);
@@ -128,7 +131,7 @@ public:
     void draw (const Graphics& g) const;
 
 private:
-    OwnedArray <GlyphLine> lines;
+    OwnedArray<GlyphLine> lines;
     float x;
     float y;
     float width;

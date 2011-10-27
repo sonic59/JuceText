@@ -133,25 +133,20 @@ public:
     };
 
     String getText() const;
-    void setText(const String& newText);
-
     TextAlignment getTextAlignment() const;
-    void setTextAlignment(const TextAlignment& newTextAlignment);
-
     WordWrap getWordWrap() const;
-    void setWordWrap(const WordWrap& newWordWrap);
-
     ReadingDirection getReadingDirection() const;
-    void setReadingDirection(const ReadingDirection& newReadingDirection);
-
     float getLineSpacing() const;
-    void setLineSpacing(const float& newLineSpacing);
-
     int getCharAttributesSize() const;
-    Attr* getCharAttribute(const int& index) const;
+    Attr* getCharAttribute (const int& index) const;
 
-    void setForegroundColour(const int& start, const int& end, const Colour& colour);
-    void setFont(const int& start, const int& end, const Font& font);
+    void setText (const String& newText);
+    void setTextAlignment (const TextAlignment& newTextAlignment);
+    void setWordWrap (const WordWrap& newWordWrap);
+    void setReadingDirection (const ReadingDirection& newReadingDirection);
+    void setLineSpacing (const float& newLineSpacing);
+    void setForegroundColour (const int& start, const int& end, const Colour& colour);
+    void setFont (const int& start, const int& end, const Font& font);
 
 private:
     String text;
@@ -160,6 +155,7 @@ private:
     WordWrap wordWrap;
     ReadingDirection readingDirection;
     OwnedArray<Attr> charAttributes;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AttributedString);
 };
 

@@ -29,17 +29,24 @@
 class JUCE_API  TypeLayout : public SingleThreadedReferenceCountedObject
 {
 public:
-    /** A handy typedef for a pointer to a typeface. */
+    //==============================================================================
+    /** A handy typedef for a pointer to a typelayout. */
     typedef ReferenceCountedObjectPtr <TypeLayout> Ptr;
 
+    //==============================================================================
+    /** Creates a new system typelayout. */
     static Ptr createSystemTypeLayout();
 
+    //==============================================================================
+    /** Destructor. */
     virtual ~TypeLayout();
 
     virtual void getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout) = 0;
 
 protected:
+    //==============================================================================
     TypeLayout();
+
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TypeLayout);
 };
