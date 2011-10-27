@@ -413,6 +413,7 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
                     //Font lucidiaGrande("Lucidia Grande", 15.0f, 0);
                     Font lucidiaGrande("Verdana", 15.0f, 0);
                     as1->setFont(301, e->getAllSubText().length(), lucidiaGrande);
+                    if ((counter > 13) && (counter < 19)) as1->setReadingDirection(AttributedString::rightToLeft);
                     counter++;
                     continue;
                 }
@@ -425,6 +426,7 @@ void WindowComponent::readXMLFrame(String xmlFile, Label* labelOne, FrameLabel* 
                     Font lucidiaGrande("Verdana", 15.0f, 0);
                     as2->setFont(0, e->getAllSubText().length(), lucidiaGrande);
                     as2->setTextAlignment(AttributedString::right);
+                    if ((counter > 13) && (counter < 19)) as2->setReadingDirection(AttributedString::rightToLeft);
                     ScopedPointer<OwnedArray<AttributedString> > asa;
                     asa = new OwnedArray<AttributedString>();
                     asa->add(as1);

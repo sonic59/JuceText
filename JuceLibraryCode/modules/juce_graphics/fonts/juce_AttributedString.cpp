@@ -26,7 +26,7 @@
 BEGIN_JUCE_NAMESPACE
 
 //==============================================================================
-AttributedString::AttributedString() : text(""), lineSpacing(0.0f), textAlignment(AttributedString::left), wordWrap(AttributedString::byWord)
+AttributedString::AttributedString() : text(""), lineSpacing(0.0f), textAlignment(AttributedString::left), wordWrap(AttributedString::byWord), readingDirection(AttributedString::natural)
 {
 }
 
@@ -66,6 +66,16 @@ AttributedString::WordWrap AttributedString::getWordWrap() const
 void AttributedString::setWordWrap(const WordWrap& other)
 {
     wordWrap = other;
+}
+
+AttributedString::ReadingDirection AttributedString::getReadingDirection() const
+{
+    return readingDirection;
+}
+
+void AttributedString::setReadingDirection(const ReadingDirection& other)
+{
+    readingDirection = other;
 }
 
 float AttributedString::getLineSpacing() const

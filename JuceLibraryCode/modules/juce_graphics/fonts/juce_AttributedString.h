@@ -125,6 +125,13 @@ public:
         byChar,
     };
 
+    enum ReadingDirection
+    {
+        natural,
+        leftToRight,
+        rightToLeft,
+    };
+
     String getText() const;
     void setText(const String& other);
 
@@ -133,6 +140,9 @@ public:
 
     WordWrap getWordWrap() const;
     void setWordWrap(const WordWrap& other);
+
+    ReadingDirection getReadingDirection() const;
+    void setReadingDirection(const ReadingDirection& other);
 
     float getLineSpacing() const;
     void setLineSpacing(const float& other);
@@ -148,6 +158,7 @@ private:
     float lineSpacing;
     TextAlignment textAlignment;
     WordWrap wordWrap;
+    ReadingDirection readingDirection;
     OwnedArray<Attr> charAttributes;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AttributedString);
 };

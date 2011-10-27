@@ -67,6 +67,8 @@ public:
         if (text.getWordWrap() == AttributedString::byWord) pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
         // DirectWrite does not support wrapping by character, default to wrapping by word
         if (text.getWordWrap() == AttributedString::byChar) pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
+        // DirectWrite does not automatically set reading direction
+        if (text.getReadingDirection() == AttributedString::rightToLeft) pTextFormat->SetReadingDirection(DWRITE_READING_DIRECTION_RIGHT_TO_LEFT);
 
         IDWriteTextLayout* pTextLayout = nullptr;
         hr = pDWriteFactory->CreateTextLayout(
