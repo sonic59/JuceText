@@ -618,7 +618,8 @@ void CoreGraphicsContext::drawGlyph (int glyphNumber, const AffineTransform& tra
     }
 }
 
-int CoreGraphicsContext::drawTextLayout (const AttributedString& text, const int x, const int y, const int width, const int height, const bool multipleLayouts)
+int CoreGraphicsContext::drawTextLayout (const AttributedString& text, const int& x, const int& y,
+                                         const int& width, const int& height, const bool& multipleLayouts)
 {
     #if (JUCE_MAC && defined (MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5 \
     && MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_5) \

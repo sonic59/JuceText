@@ -103,7 +103,8 @@ public:
     virtual void setFont (const Font& newFont) = 0;
     virtual Font getFont() = 0;
     virtual void drawGlyph (int glyphNumber, const AffineTransform& transform) = 0;
-    virtual int drawTextLayout (const AttributedString& text, const int x, const int y, const int width, const int height, const bool multipleLayouts) = 0;
+    virtual int drawTextLayout (const AttributedString& text, const int& x, const int& y,
+                                const int& width, const int& height, const bool& multipleLayouts) = 0;
 };
 
 

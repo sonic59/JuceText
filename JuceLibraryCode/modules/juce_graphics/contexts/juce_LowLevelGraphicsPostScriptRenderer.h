@@ -88,7 +88,7 @@ public:
     Font getFont();
     void setFont (const Font& newFont);
     void drawGlyph (int glyphNumber, const AffineTransform& transform);
-    int drawTextLayout (const AttributedString&, const int, const int, const int, const int, const bool) { return 0; }
+    int drawTextLayout (const AttributedString&, const int&, const int&, const int&, const int&, const bool&) { return 0; }
 
 protected:
     //==============================================================================
