@@ -52,6 +52,7 @@ public:
                 continue;
             if (attr->range.getEnd() > CFAttributedStringGetLength (attribString))
                 attr->range.setEnd(CFAttributedStringGetLength(attribString));
+            // Font Attribute
             if (attr->attribute == Attr::font)
             {
                 AttrFont* attrFont = static_cast<AttrFont*>(attr);
@@ -70,6 +71,7 @@ public:
                                                 kCTFontAttributeName, ctFontRef);
                 CFRelease (ctFontRef);
             }
+            // Text Color Attribute
             if (attr->attribute == Attr::foregroundColour)
             {
                 AttrColour* attrColour = static_cast<AttrColour*>(attr);
@@ -113,23 +115,24 @@ public:
         return attribString;
     }
 
+    // This method draws a paragraph of text directly to to the CoreGraphics Context without parsing
+    // or copying the text's glyph structures.
     static int drawTextLayout (const AttributedString& text, const int& x, const int& y, const int& width,
                                const int& height, const bool& multipleLayouts, const CGContextRef& context,
                                const float& flipHeight)
     {
+        // Get the Platform Attributed String
         CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString (text);
         CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString (attribString);
         CFRelease (attribString);
 
         // Initialize a rectangular path.
-
         CGMutablePathRef path = CGPathCreateMutable();
         CGRect bounds = CGRectMake ((CGFloat) x, flipHeight - ((CGFloat) y + (CGFloat) height),
                                     (CGFloat) width, (CGFloat) height);
         CGPathAddRect (path, NULL, bounds);
 
         // Create the frame and draw it into the graphics context
-
         CTFrameRef frame = CTFramesetterCreateFrame (framesetter, CFRangeMake(0, 0), path, NULL);
         CFRelease (framesetter);
         CGPathRelease (path);
@@ -149,18 +152,22 @@ public:
             CGPoint lastLineOrigin;
             CTFrameGetLineOrigins (frame, CFRangeMake(lastLineIndex, 1), &lastLineOrigin);
             textHeight =  (CGFloat) height - lastLineOrigin.y + descent;
-
-            // Add code here to perform vertical alignment for a single layout before drawing the frame
         }
+        // If wer are not displaying multiple layouts, we can do vertical alignment
+        // Add code here to perform vertical alignment for a single layout before drawing the frame
 
+        // Draw the Core Text Frame directly on the CoreGraphics Context
         CTFrameDraw (frame, context);
 
         CFRelease (frame);
         return (int) textHeight;
     }
 
+    // This method is used to create the glyph structures required to draw a paragraph of text
+    // glyph by glpyh
     void getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout)
     {
+        // Get the Platform Attributed String
         CFAttributedStringRef attribString = CoreTextTypeLayout::getAttributedString (text);
         CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString (attribString);
         CFRelease (attribString);
@@ -176,13 +183,17 @@ public:
         CFRelease (framesetter);
         CGPathRelease (path);
 
+        // Get the lines of text
         CFArrayRef lines = CTFrameGetLines (frame);
         CFIndex numLines = CFArrayGetCount (lines);
         // Preallocate GlyphLayout Line Array
         glyphLayout.setNumLines (numLines);
+        // Iterate through each line
         for (CFIndex i = 0; i < numLines; ++i)
         {
+            // Get the current line
             CTLineRef line = (CTLineRef) CFArrayGetValueAtIndex (lines, i);
+            // Get the runs of text for this current line
             CFArrayRef runs = CTLineGetGlyphRuns (line);
             CFIndex numRuns = CFArrayGetCount (runs);
             // Get string range
@@ -199,14 +210,18 @@ public:
             CGFloat descent;
             CGFloat leading;
             CTLineGetTypographicBounds (line, &ascent,  &descent, &leading);
+            // Create GlyphLine data structure
             GlyphLine* glyphLine = new GlyphLine ((int) numRuns, lineStringRange, lineOrigin,
                                                   (float) ascent, (float) descent, (float) leading);
+            // Iterate through each run
             for (CFIndex j = 0; j < numRuns; ++j)
             {
+                // Get the current run
                 CTRunRef run = (CTRunRef) CFArrayGetValueAtIndex (runs, j);
                 CFIndex numGlyphs = CTRunGetGlyphCount (run);
                 CFRange runStringRange = CTRunGetStringRange (run);
                 CFIndex runStringEnd = runStringRange.location + runStringRange.length - 1;
+                // Create GlyphRun data structure
                 GlyphRun* glyphRun = new GlyphRun ((int) numGlyphs, (int) runStringRange.location,
                                                    (int) runStringEnd);
                 // Add Font Attribute to GlyphRun
@@ -223,7 +238,7 @@ public:
                     // Reverse fontHeightToCGSizeFactor so it doesn't get applied twice
                     CTFontRef ctFontRef = CTFontCreateWithName (fontName.toCFString(), 1024, nullptr);
                     CGFontRef cgFontRef = CTFontCopyGraphicsFont (ctFontRef, nullptr);
-                    CFRelease(ctFontRef);
+                    CFRelease (ctFontRef);
                     const int totalHeight = abs (CGFontGetAscent (cgFontRef)) + abs (CGFontGetDescent (cgFontRef));
                     float fontHeightToCGSizeFactor = CGFontGetUnitsPerEm (cgFontRef) / (float) totalHeight;
                     CGFontRelease (cgFontRef);
@@ -239,7 +254,7 @@ public:
                 {
                     const CGFloat* components = CGColorGetComponents (cgRunColor);
                     const int numComponents = CGColorGetNumberOfComponents (cgRunColor);
-                    // RGBA
+                    // Check if CGColor is RGBA
                     if (numComponents == 4)
                     {
                         Colour runColour ((uint8) (components[0] * 255), (uint8) (components[1] * 255),
@@ -251,12 +266,17 @@ public:
                 // First we will try to access the metrics without copying data
                 const CGGlyph* glyphsPtr = CTRunGetGlyphsPtr (run);
                 const CGPoint* posPtr = CTRunGetPositionsPtr (run);
+                // According to the Core Text documentation, it is possible for one or both of the above functions
+                // to return null. If that occurs, we must create a buffer and manually copy over the data using
+                // a different set of functions.
                 if (glyphsPtr != nullptr && posPtr != nullptr)
                 {
                     // We can access the metrics without copying them
                     for (CFIndex k = 0; k < numGlyphs; ++k)
                     {
-                        //The glyph positions in a run are relative to the origin of the line containing the run
+                        // The glyph positions in a run are relative to the origin of the line containing the run
+                        // The origin of the line is always on the left side and positions increase to the right
+                        // regardless if the text is LTR or RTL.
                         float xPos = glyphLayout.getX() + glyphLine->getLineOrigin().getX() + (float) posPtr[k].x;
                         float yPos = glyphLayout.getY() + glyphLine->getLineOrigin().getY() + (float) posPtr[k].y;
                         Glyph* glyph = new Glyph(glyphsPtr[k], xPos, yPos);
@@ -272,6 +292,9 @@ public:
                     CTRunGetPositions (run, CFRangeMake (0, 0), positionBuffer);
                     for (CFIndex k = 0; k < numGlyphs; ++k)
                     {
+                        // The glyph positions in a run are relative to the origin of the line containing the run
+                        // The origin of the line is always on the left side and positions increase to the right
+                        // regardless if the text is LTR or RTL.
                         float xPos = glyphLayout.getX() + glyphLine->getLineOrigin().getX() + (float) positionBuffer[k].x;
                         float yPos = glyphLayout.getY() + glyphLine->getLineOrigin().getY() + (float) positionBuffer[k].y;
                         Glyph* glyph = new Glyph (glyphBuffer[k], xPos, yPos);
@@ -979,9 +1002,14 @@ private:
 #endif
 
 //==============================================================================
+// This method selects which Text Layout API should be used
 TypeLayout::Ptr TypeLayout::createSystemTypeLayout()
 {
+#if JUCE_CORETEXT_AVAILABLE
     return new CoreTextTypeLayout();
+#else
+    return new SimpleTypeLayout();
+#endif
 }
 
 Typeface::Ptr Typeface::createSystemTypefaceFor (const Font& font)
