@@ -38,7 +38,7 @@ public:
         // D2D Factory and GDI Render target every time we layout text.
         // This is inefficient and we may be loading and unloading libraries each layout.
         // These four things should be created once at application startup and be destroyed
-        // when the application closes. I'm not sure where the best place to do this so
+        // when the application exits. I'm not sure where the best place to do this so
         // for now I will just use the inefficient method.
 
         IDWriteFactory* dwFactory = nullptr;
@@ -172,7 +172,7 @@ public:
         }
 
         // To copy glyph data from DirectWrite into our own data structures we must create our
-        // own CustomTextRender. Instead of passing the draw method an actual graphics context,
+        // own CustomTextRenderer. Instead of passing the draw method an actual graphics context,
         // we pass it the GlyphLayout object that needs to be filled with glyphs.
         CustomDirectWriteTextRenderer* textRenderer = nullptr;
         textRenderer = new CustomDirectWriteTextRenderer();

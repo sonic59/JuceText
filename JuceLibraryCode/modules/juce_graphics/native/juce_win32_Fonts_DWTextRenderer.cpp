@@ -23,12 +23,18 @@
   ==============================================================================
 */
 
+// To copy glyph data from DirectWrite into our own data structures we must create our
+// own CustomTextRenderer.
 CustomDirectWriteTextRenderer::CustomDirectWriteTextRenderer()
     : refCount(1),
       currentRun(0),
       currentLine(-1),
       lastOriginY(-1.0f)
 {
+    // It is more efficient to create the DirectWrite factor and os font collection
+    // objects once rather than every time DrawGlyphRun is run. It would be even
+    // more efficient if these objects were created once at the start of the
+    // application and deleted once the application exits.
     dwFactory = nullptr;
     DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
         reinterpret_cast<IUnknown**>(&dwFactory));
@@ -55,6 +61,8 @@ IFACEMETHODIMP CustomDirectWriteTextRenderer::DrawGlyphRun(
     IUnknown* clientDrawingEffect
     )
 {
+    // Instead of passing in an actual graphics context, we passed in a GlyphLayout object
+    // that needs to be filled with Glyph data.
     GlyphLayout* glyphLayout = static_cast<GlyphLayout*>(clientDrawingContext);
     // Check if this is a new line
     if (baselineOriginY != lastOriginY)
@@ -69,33 +77,38 @@ IFACEMETHODIMP CustomDirectWriteTextRenderer::DrawGlyphRun(
     // Line Number Error Checking
     if (currentLine < 0)
         return S_OK;
-    // Add Maximum Run Descent to Line
+    // We need to set the proper line descent so we can determine the actual text height
     GlyphLine& glyphLine = glyphLayout->getGlyphLine (currentLine);
+    // Font metrics are in font design units
     DWRITE_FONT_METRICS dwFontMetrics;
     glyphRun->fontFace->GetMetrics(&dwFontMetrics);
     float descent = (std::abs ((float) dwFontMetrics.descent) /  (float) dwFontMetrics.designUnitsPerEm) * glyphRun->fontEmSize;
+    // Add Maximum Run Descent to Line
     if (descent > glyphLine.getDescent())
         glyphLine.setDescent (descent);
     // Create GlyphRun
     int runStringEnd = glyphRunDescription->textPosition + glyphRunDescription->stringLength;
     GlyphRun* glyphRunLayout = new GlyphRun (glyphRun->glyphCount, glyphRunDescription->textPosition, runStringEnd);
-    // Add Font Attribute to GlyphRun     
+    // Add Font Attribute to GlyphRun
+    // We need to find the name of the DirectWrite glyph run font face in order to create
+    // the correct juce font.
     Font runFont;   
     IDWriteFont* dwFont = nullptr;
     HRESULT hr = dwFontCollection->GetFontFromFontFace (glyphRun->fontFace, &dwFont);
-    // Set Style Flags
+    // Get the DirectWrite style flags and set the juce font style flags
     int styleFlags = 0;
     if (dwFont->GetWeight() == DWRITE_FONT_WEIGHT_BOLD) styleFlags &= Font::bold;
     if (dwFont->GetStyle() == DWRITE_FONT_STYLE_ITALIC) styleFlags &= Font::italic;
-    // Get Font Fame
     IDWriteFontFamily* dwFontFamily = nullptr;
     hr = dwFont->GetFontFamily (&dwFontFamily);
+    // Get the Font Family Names
     IDWriteLocalizedStrings* dwFamilyNames = nullptr;
     hr = dwFontFamily->GetFamilyNames (&dwFamilyNames);
     UINT32 index = 0;
     BOOL exists = false;
+    // The locale should probably be detected rather than hard coded to en-us
     hr = dwFamilyNames->FindLocaleName (L"en-us", &index, &exists);
-    if (!exists)
+    if (! exists)
         index = 0;
     UINT32 length = 0;
     hr = dwFamilyNames->GetStringLength (index, &length);
@@ -105,8 +118,10 @@ IFACEMETHODIMP CustomDirectWriteTextRenderer::DrawGlyphRun(
     safeRelease (&dwFamilyNames);
     safeRelease (&dwFontFamily);
     safeRelease (&dwFont);
+    // We need the font metrics so we can calculate the correct font height
     if (SUCCEEDED (hr))
     {
+        // Font metrics are in design units
         DWRITE_FONT_METRICS dwFontMetrics;
         glyphRun->fontFace->GetMetrics (&dwFontMetrics);
         const float totalHeight = std::abs ((float) dwFontMetrics.ascent) + std::abs ((float) dwFontMetrics.descent);
@@ -137,8 +152,8 @@ IFACEMETHODIMP CustomDirectWriteTextRenderer::DrawGlyphRun(
         // Text Origin is on the right, text should be drawn to the left
         if (glyphRun->bidiLevel % 2 == 1)
             xOffset -= glyphRun->glyphAdvances[i];
-        Glyph* glyph = new Glyph(glyphRun->glyphIndices[i], xOffset, baselineOriginY);
-        glyphRunLayout->addGlyph(glyph);
+        Glyph* glyph = new Glyph (glyphRun->glyphIndices[i], xOffset, baselineOriginY);
+        glyphRunLayout->addGlyph (glyph);
         // Even Number Bidi Level indicates LTR text
         // Text Origin is on the left, text should be drawn to the right
         if (glyphRun->bidiLevel % 2 == 0)
