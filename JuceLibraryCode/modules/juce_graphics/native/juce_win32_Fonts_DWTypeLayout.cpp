@@ -30,8 +30,17 @@ class DirectWriteTypeLayout : public TypeLayout
 public:
     DirectWriteTypeLayout() {}
 
+    // This method takes an attributed string and outputs a GlyphLayout data
+    // structure that contains the glyph number and location of each inidividual glyph
     void getGlyphLayout (const AttributedString& text, GlyphLayout& glyphLayout)
     {
+        // For now we are creating the DirectWrite Factory, System Font Collection,
+        // D2D Factory and GDI Render target every time we layout text.
+        // This is inefficient and we may be loading and unloading libraries each layout.
+        // These four things should be created once at application startup and be destroyed
+        // when the application closes. I'm not sure where the best place to do this so
+        // for now I will just use the inefficient method.
+
         IDWriteFactory* dwFactory = nullptr;
         HRESULT hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
             reinterpret_cast<IUnknown**>(&dwFactory));
@@ -42,7 +51,7 @@ public:
         // To add color to text, we need to create a D2D render target
         // Since we are not actually rendering to a D2D context we create a temporary GDI render target
         ID2D1Factory *d2dFactory = nullptr;
-        hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
+        hr = D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
         D2D1_RENDER_TARGET_PROPERTIES d2dRTProp = D2D1::RenderTargetProperties(
             D2D1_RENDER_TARGET_TYPE_SOFTWARE,
             D2D1::PixelFormat(
@@ -54,12 +63,15 @@ public:
             D2D1_FEATURE_LEVEL_DEFAULT
             );
         ID2D1DCRenderTarget* d2dDCRT = nullptr;
-        hr = d2dFactory->CreateDCRenderTarget(&d2dRTProp, &d2dDCRT);
+        hr = d2dFactory->CreateDCRenderTarget (&d2dRTProp, &d2dDCRT);
 
+        // Initially we set the paragraph up with a default font and then apply the attributed string ranges later
         Font defaultFont;
         const float defaultFontHeightToEmSizeFactor = getFontHeightToEmSizeFactor (defaultFont, *dwFontCollection);
+        // We should probably be detecting the locale instead of hard coding it to en-us
         String localeName("en-us");
 
+        // We multiply the font height by the size factor so we layout text at the correct size
         IDWriteTextFormat* dwTextFormat = nullptr;
         hr = dwFactory->CreateTextFormat (
             defaultFont.getTypefaceName().toWideCharPointer(),
@@ -94,7 +106,7 @@ public:
         // DirectWrite does not automatically set reading direction
         // This must be set correctly and manually when using RTL Scripts (Hebrew, Arabic)
         if (text.getReadingDirection() == AttributedString::rightToLeft)
-            dwTextFormat->SetReadingDirection(DWRITE_READING_DIRECTION_RIGHT_TO_LEFT);
+            dwTextFormat->SetReadingDirection (DWRITE_READING_DIRECTION_RIGHT_TO_LEFT);
 
         IDWriteTextLayout* dwTextLayout = nullptr;
         hr = dwFactory->CreateTextLayout (
@@ -120,9 +132,10 @@ public:
                 DWRITE_TEXT_RANGE dwRange;
                 dwRange.startPosition = attrFont->range.getStart();
                 dwRange.length = attrFont->range.getLength();
-                dwTextLayout->SetFontFamilyName(attrFont->font.getTypefaceName().toWideCharPointer(), dwRange);
-                const float fontHeightToEmSizeFactor = getFontHeightToEmSizeFactor(attrFont->font, *dwFontCollection);
-                dwTextLayout->SetFontSize(attrFont->font.getHeight() * fontHeightToEmSizeFactor, dwRange);
+                dwTextLayout->SetFontFamilyName (attrFont->font.getTypefaceName().toWideCharPointer(), dwRange);
+                // We multiply the font height by the size factor so we layout text at the correct size
+                const float fontHeightToEmSizeFactor = getFontHeightToEmSizeFactor (attrFont->font, *dwFontCollection);
+                dwTextLayout->SetFontSize (attrFont->font.getHeight() * fontHeightToEmSizeFactor, dwRange);
             }
             if (attr->attribute == Attr::foregroundColour)
             {
@@ -130,13 +143,12 @@ public:
                 DWRITE_TEXT_RANGE dwRange;
                 dwRange.startPosition = attrColour->range.getStart();
                 dwRange.length = attrColour->range.getLength();
-
                 ID2D1SolidColorBrush* d2dBrush = nullptr;
-                d2dDCRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(attrColour->colour.getFloatRed(),
+                d2dDCRT->CreateSolidColorBrush (D2D1::ColorF (D2D1::ColorF(attrColour->colour.getFloatRed(),
                     attrColour->colour.getFloatGreen(), attrColour->colour.getFloatBlue(),
                     attrColour->colour.getFloatAlpha())), &d2dBrush);
                 // We need to call SetDrawingEffect with a legimate brush to get DirectWrite to break text based on colours
-                dwTextLayout->SetDrawingEffect(d2dBrush, dwRange);
+                dwTextLayout->SetDrawingEffect (d2dBrush, dwRange);
                 safeRelease (&d2dBrush);
             }
         }
@@ -148,16 +160,20 @@ public:
         HeapBlock <DWRITE_LINE_METRICS> dwLineMetrics (actualLineCount);
         hr = dwTextLayout->GetLineMetrics (dwLineMetrics, actualLineCount, &actualLineCount);
         int location = 0;
+        // Create GlyphLine structures for each line in the layout
         for (UINT32 i = 0; i < actualLineCount; ++i)
         {
             // Get string range
             Range<int> lineStringRange (location, (int) location + dwLineMetrics[i].length);
             location = dwLineMetrics[i].length;
             GlyphLine* glyphLine = new GlyphLine();
-            glyphLine->setStringRange(lineStringRange);
-            glyphLayout.addGlyphLine(glyphLine);
+            glyphLine->setStringRange (lineStringRange);
+            glyphLayout.addGlyphLine (glyphLine);
         }
 
+        // To copy glyph data from DirectWrite into our own data structures we must create our
+        // own CustomTextRender. Instead of passing the draw method an actual graphics context,
+        // we pass it the GlyphLayout object that needs to be filled with glyphs.
         CustomDirectWriteTextRenderer* textRenderer = nullptr;
         textRenderer = new CustomDirectWriteTextRenderer();
         hr = dwTextLayout->Draw (
@@ -180,10 +196,11 @@ private:
 
     const float getFontHeightToEmSizeFactor(Font& font, IDWriteFontCollection& dwFontCollection)
     {
-        // To set the font size, we need to get the font metrics
+        // To set the font size factor, we need to get the font metrics
         BOOL fontFound;
         uint32 fontIndex;
 
+        // Search for the font in the font collection using the font name
         HRESULT hr = dwFontCollection.FindFamilyName (font.getTypefaceName().toWideCharPointer(),
                                                       &fontIndex, &fontFound);
         if (! fontFound)
@@ -199,6 +216,7 @@ private:
         IDWriteFontFace* dwFontFace = nullptr;
         hr = dwFont->CreateFontFace (&dwFontFace);
 
+        // Font metrics are in font design units
         DWRITE_FONT_METRICS dwFontMetrics;
         dwFontFace->GetMetrics (&dwFontMetrics);
         const float totalHeight = std::abs ((float) dwFontMetrics.ascent) + std::abs ((float) dwFontMetrics.descent);
