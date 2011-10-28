@@ -39,6 +39,23 @@ public:
         IDWriteFontCollection* dwFontCollection = nullptr;
         hr = dwFactory->GetSystemFontCollection (&dwFontCollection);
 
+        // To add color to text, we need to create a D2D render target
+        // Since we are not actually rendering to a D2D context we create a temporary GDI render target
+        ID2D1Factory *d2dFactory = nullptr;
+        hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
+        D2D1_RENDER_TARGET_PROPERTIES d2dRTProp = D2D1::RenderTargetProperties(
+            D2D1_RENDER_TARGET_TYPE_SOFTWARE,
+            D2D1::PixelFormat(
+            DXGI_FORMAT_B8G8R8A8_UNORM,
+            D2D1_ALPHA_MODE_IGNORE),
+            0,
+            0,
+            D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE,
+            D2D1_FEATURE_LEVEL_DEFAULT
+            );
+        ID2D1DCRenderTarget* d2dDCRT = nullptr;
+        hr = d2dFactory->CreateDCRenderTarget(&d2dRTProp, &d2dDCRT);
+
         Font defaultFont;
         const float defaultFontHeightToEmSizeFactor = getFontHeightToEmSizeFactor (defaultFont, *dwFontCollection);
         String localeName("en-us");
@@ -89,22 +106,6 @@ public:
             &dwTextLayout
             );
 
-        // To add color to text, we need to create a D2D render target
-        // Since we are not actually rendering to a D2D context we create a temporary GDI render target
-        ID2D1Factory *d2dFactory = nullptr;
-        hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
-        D2D1_RENDER_TARGET_PROPERTIES d2dRTProp = D2D1::RenderTargetProperties(
-            D2D1_RENDER_TARGET_TYPE_SOFTWARE,
-            D2D1::PixelFormat(
-            DXGI_FORMAT_B8G8R8A8_UNORM,
-            D2D1_ALPHA_MODE_IGNORE),
-            0,
-            0,
-            D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE,
-            D2D1_FEATURE_LEVEL_DEFAULT
-            );
-        ID2D1DCRenderTarget* d2dDCRT = nullptr;
-        hr = d2dFactory->CreateDCRenderTarget(&d2dRTProp, &d2dDCRT);
         // Character Attributes
         int numCharacterAttributes = text.getCharAttributesSize();
         for (int i = 0; i < numCharacterAttributes; ++i)
@@ -139,8 +140,6 @@ public:
                 safeRelease (&d2dBrush);
             }
         }
-        safeRelease (&d2dDCRT);
-        safeRelease (&d2dFactory);
 
         UINT32 actualLineCount = 0;
         hr = dwTextLayout->GetLineMetrics (nullptr, 0, &actualLineCount);
@@ -171,6 +170,8 @@ public:
         safeRelease (&textRenderer);
         safeRelease (&dwTextLayout);
         safeRelease (&dwTextFormat);
+        safeRelease (&d2dDCRT);
+        safeRelease (&d2dFactory);
         safeRelease (&dwFontCollection);
         safeRelease (&dwFactory);
     }
