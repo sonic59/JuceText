@@ -266,6 +266,17 @@ void SimpleTypeLayout::getGlyphLayout (const AttributedString& text, GlyphLayout
     int stringLength = text.getText().length();
     int numCharacterAttributes = text.getCharAttributesSize();
     int rangeStart = 0;
+    // Character attributes are applied as a series of ranges. These ranges may overlap or there may
+    // be multiple attributes for the same range. We need to come up with a single set of unique and
+    // non overlapping ranges.
+    // The approach below iterates through every character, looks through all the attributes and their
+    // ranges and stores the last font or color that was applied. It think constructs a set of unique
+    // and non overlapping ranges by comparing each character's attributes to the previous characters
+    // attributes.
+    // A more efficient approach may be to split and combine the individual ranges to construct the
+    // set of unique and non overlapping ranges. This more efficient approach, if possible, would only
+    // need to iterate through all the attributes once. This would be much faster than the current
+    // approach which loops through all the attributes for every character.
     Font defaultFont;
     Colour defaultColour (Colours::black);
     Array<RunAttribute> runAttributes;
