@@ -146,6 +146,12 @@
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_graphics\native\juce_win32_Fonts_DWTypeLayout.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_gui_basics\widgets\juce_FrameLabel.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_gui_basics\widgets\juce_LayoutLabel.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\Source\MainWindow.cpp" />
     <ClCompile Include="..\..\Source\Main.cpp" />
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_core\text\juce_CharacterFunctions.cpp">
@@ -924,6 +930,8 @@
     <ClInclude Include="..\..\JuceLibraryCode\modules\juce_graphics\fonts\juce_SimpleTypeLayout.h" />
     <ClInclude Include="..\..\JuceLibraryCode\modules\juce_graphics\fonts\juce_TypeLayout.h" />
     <ClInclude Include="..\..\JuceLibraryCode\modules\juce_graphics\native\juce_win32_Fonts_DWTextRenderer.h" />
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_gui_basics\widgets\juce_FrameLabel.h" />
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_gui_basics\widgets\juce_LayoutLabel.h" />
     <ClInclude Include="..\..\Source\MainWindow.h" />
     <ClInclude Include="..\..\JuceLibraryCode\modules\juce_core\text\juce_CharacterFunctions.h" />
     <ClInclude Include="..\..\JuceLibraryCode\modules\juce_core\text\juce_CharPointer_ASCII.h" />

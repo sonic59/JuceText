@@ -1014,6 +1014,12 @@
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_graphics\native\juce_win32_Fonts_DWTextRenderer.cpp">
       <Filter>Juce Modules\juce_graphics\native</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_gui_basics\widgets\juce_FrameLabel.cpp">
+      <Filter>Juce Modules\juce_gui_basics\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_gui_basics\widgets\juce_LayoutLabel.cpp">
+      <Filter>Juce Modules\juce_gui_basics\widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\MainWindow.h">
@@ -1960,6 +1966,12 @@
     </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\modules\juce_graphics\native\juce_win32_Fonts_DWTextRenderer.h">
       <Filter>Juce Modules\juce_graphics\native</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_gui_basics\widgets\juce_FrameLabel.h">
+      <Filter>Juce Modules\juce_gui_basics\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_gui_basics\widgets\juce_LayoutLabel.h">
+      <Filter>Juce Modules\juce_gui_basics\widgets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
